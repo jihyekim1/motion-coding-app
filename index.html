@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모션 코딩: 미로 탈출</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Left Panel - Camera & Motion Info */
+        #camera-panel {
+            width: 50%;
+            position: relative;
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 75%;
+            /* 4:3 aspect ratio */
+            overflow: hidden;
+            background: black;
+        }
+
+        #input-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+            object-fit: cover;
+        }
+
+        #output-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        #overlay-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #suggestion-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #00ff00;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        #suggestion-box.visible {
+            opacity: 1;
+        }
+
+        .block-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .block-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        /* Right Panel - Maze & Code */
+        #game-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #maze-container {
+            flex: 2;
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #maze-canvas {
+            background: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #stage-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        #bottom-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #code-area {
+            flex: 1;
+            background: #252526;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 10px;
+            border: 1px solid #3e3e42;
+        }
+
+        .code-block {
+            background: #0e639c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .code-block.execute {
+            background: #d32f2f;
+        }
+
+        #controls-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        #btn-download {
+            background: #28a745;
+        }
+
+        #btn-download:hover {
+            background: #218838;
+        }
+
+        #btn-delete {
+            background: #dc3545;
+        }
+
+        #btn-delete:hover {
+            background: #c82333;
+        }
+
+        #btn-start {
+            background: #007acc;
+        }
+
+        /* Hidden, interaction by motion */
+
+        #console-log {
+            height: 100px;
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        /* Modal for Stage Clear */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #modal-content {
+            background: #333;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #modal-title {
+            font-size: 32px;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        #modal-btn {
+            background: #007acc;
+            padding: 15px 30px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <!-- Camera Section -->
+        <div id="camera-panel">
+            <div id="video-container">
+                <video id="input-video"></video>
+                <canvas id="output-canvas"></canvas>
+                <div id="overlay-ui">
+                    <div id="suggestion-box">
+                        <span class="block-icon">❓</span>
+                        <span class="block-text" id="suggestion-text">동작 대기 중...</span>
+                        <div class="help-text">화면을 클릭하여 추가</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; padding: 20px;">
+                <h3>사용 방법</h3>
+                <ul>
+                    <li>🖐 오른손 수평: <b>오른쪽 회전</b></li>
+                    <li>🖐 왼손 수평: <b>왼쪽 회전</b></li>
+                    <li>🙌 만세: <b>앞으로 이동</b></li>
+                    <li>🙆 두 손 머리: <b>실행하기</b></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="game-panel">
+            <div id="maze-container">
+                <div id="stage-info">Stage 1</div>
+                <canvas id="maze-canvas" width="400" height="400"></canvas>
+            </div>
+
+            <div id="bottom-panel">
+                <div id="controls-area">
+                    <span style="font-weight: bold; color: #ccc;">작성된 코드:</span>
+                    <div>
+                        <button id="btn-delete">마지막 블록 삭제</button>
+                        <button id="btn-download">로그 다운로드</button>
+                    </div>
+                </div>
+                <div id="code-area"></div>
+                <div id="console-log"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <div id="modal-title">스테이지 클리어!</div>
+            <button id="modal-btn" onclick="nextStage()">다음 스테이지로</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State ---
+        const state = {
+            participantId: null,
+            sessionId: crypto.randomUUID(),
+            stageId: 1,
+            attemptId: 0,
+            logs: [],
+            codeBlocks: [],
+            isExecuting: false,
+            currentMotion: null,
+            suggestedBlock: null,
+            lastMotionTime: 0
+        };
+
+        // --- Logger ---
+        function initLogger() {
+            let pid = localStorage.getItem('participant_id');
+            if (!pid) {
+                pid = crypto.randomUUID();
+                localStorage.setItem('participant_id', pid);
+            }
+            state.participantId = pid;
+            logEvent('session_start');
+        }
+
+        function logEvent(type, data = {}) {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const h = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}`;
+
+            const entry = {
+                participant_id: state.participantId,
+                session_id: state.sessionId,
+                stage_id: state.stageId,
+                attempt_id: state.attemptId,
+                timestamp: timestamp,
+                event_type: type,
+                ...data
+            };
+            state.logs.push(entry);
+            console.log(`[LOG] ${type}`, data);
+
+            const consoleEl = document.getElementById('console-log');
+            const timeStr = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `<div>[${timeStr}] ${type}: ${JSON.stringify(data)}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function downloadLogs() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // --- Maze Game Logic ---
+        const TILE_SIZE = 80; // 5x5 grid in 400x400
+        const GRID_SIZE = 5;
+
+        const STAGES = {
+            1: {
+                grid: [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 2], // 1: Path, 2: Goal, 0: Wall
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0]
+                ],
+                start: { x: 0, y: 2, dir: 1 } // dir: 0^, 1>, 2v, 3<
+            },
+            2: {
+                grid: [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 2],
+                    [0, 0, 1, 0, 0],
+                    [1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0]
+                ],
+                start: { x: 0, y: 3, dir: 1 }
+            },
+            3: {
+                grid: [
+                    [0, 0, 1, 1, 2],
+                    [0, 0, 1, 0, 0],
+                    [0, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0],
+                    [0, 1, 1, 1, 0]
+                ],
+                start: { x: 1, y: 4, dir: 1 }
+            }
+        };
+
+        let player = { x: 0, y: 0, dir: 1 };
+
+        const mazeCanvas = document.getElementById('maze-canvas');
+        const ctx = mazeCanvas.getContext('2d');
+
+        function initStage(id) {
+            state.stageId = id;
+            document.getElementById('stage-info').innerText = `Stage ${id}`;
+            resetPlayer();
+            drawMaze();
+        }
+
+        function resetPlayer() {
+            const config = STAGES[state.stageId];
+            player = { ...config.start };
+            drawMaze();
+        }
+
+        function drawMaze() {
+            ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+
+            const grid = STAGES[state.stageId].grid;
+
+            // Draw Grid
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = grid[y][x];
+                    if (cell === 0) {
+                        ctx.fillStyle = '#333'; // Wall
+                    } else if (cell === 1) {
+                        ctx.fillStyle = '#eee'; // Path
+                    } else if (cell === 2) {
+                        ctx.fillStyle = '#ffd700'; // Goal
+                    }
+                    ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            }
+
+            // Draw Player
+            const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
+            const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(player.dir * 90 * Math.PI / 180);
+
+            // Arrow shape
+            ctx.beginPath();
+            ctx.moveTo(0, -20);
+            ctx.lineTo(15, 20);
+            ctx.lineTo(0, 10);
+            ctx.lineTo(-15, 20);
+            ctx.closePath();
+            ctx.fillStyle = 'red';
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        async function executeCode() {
+            if (state.isExecuting) return;
+            state.isExecuting = true;
+            state.attemptId++;
+            logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
+
+            resetPlayer(); // Start from beginning
+            await new Promise(r => setTimeout(r, 500));
+
+            for (const block of state.codeBlocks) {
+                await new Promise(r => setTimeout(r, 800)); // Step delay
+
+                if (block.type === 'move_forward') {
+                    const dx = [0, 1, 0, -1];
+                    const dy = [-1, 0, 1, 0];
+                    const nx = player.x + dx[player.dir];
+                    const ny = player.y + dy[player.dir];
+
+                    // Check bounds and collision
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
+                        STAGES[state.stageId].grid[ny][nx] !== 0) {
+                        player.x = nx;
+                        player.y = ny;
+                        logEvent('action_move_success', { x: nx, y: ny });
+                    } else {
+                        logEvent('action_move_fail', { x: nx, y: ny });
+                        // Visual shake feedback could go here
+                    }
+                } else if (block.type === 'turn_left') {
+                    player.dir = (player.dir + 3) % 4;
+                } else if (block.type === 'turn_right') {
+                    player.dir = (player.dir + 1) % 4;
+                }
+
+                drawMaze();
+            }
+
+            // Check Victory
+            const grid = STAGES[state.stageId].grid;
+            if (grid[player.y][player.x] === 2) {
+                logEvent('execution_success');
+                setTimeout(() => {
+                    showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700");
+                }, 500);
+            } else {
+                logEvent('execution_fail');
+                setTimeout(() => {
+                    showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444");
+                }, 500);
+                state.isExecuting = false;
+            }
+        }
+
+        function showModal(title, btnText, action, color) {
+            const overlay = document.getElementById('modal-overlay');
+            const titleEl = document.getElementById('modal-title');
+            const btnEl = document.getElementById('modal-btn');
+
+            titleEl.innerText = title;
+            titleEl.style.color = color;
+            btnEl.innerText = btnText;
+            btnEl.setAttribute('onclick', action);
+
+            overlay.style.display = 'flex';
+        }
+
+        window.retryStage = () => {
+            document.getElementById('modal-overlay').style.display = 'none';
+            state.isExecuting = false;
+            resetPlayer();
+        };
+
+        window.nextStage = () => {
+            document.getElementById('modal-overlay').style.display = 'none';
+            state.isExecuting = false;
+            state.codeBlocks = [];
+            updateCodeUI();
+
+            if (state.stageId < 3) {
+                initStage(state.stageId + 1);
+            } else {
+                alert("모든 스테이지를 클리어했습니다! 축하합니다!");
+                logEvent('session_end');
+            }
+        };
+
+        // --- Interaction Logic ---
+        function updateCodeUI() {
+            const area = document.getElementById('code-area');
+            area.innerHTML = '';
+            state.codeBlocks.forEach((block, index) => {
+                const el = document.createElement('div');
+                el.className = `code-block ${block.type}`;
+                el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                area.appendChild(el);
+            });
+        }
+
+        function addBlock(type, name, icon) {
+            if (state.isExecuting) return;
+            state.codeBlocks.push({ type, name, icon });
+            logEvent('block_confirmed', { type, name });
+            updateCodeUI();
+        }
+
+        function removeLastBlock() {
+            if (state.isExecuting || state.codeBlocks.length === 0) return;
+            const removed = state.codeBlocks.pop();
+            logEvent('block_deleted', { removed });
+            updateCodeUI();
+        }
+
+        document.getElementById('btn-delete').onclick = removeLastBlock;
+        document.getElementById('btn-download').onclick = downloadLogs;
+
+        // Global click listener for confirming suggestions
+        document.body.addEventListener('click', (e) => {
+            // Ignore clicks on buttons
+            if (e.target.tagName === 'BUTTON') return;
+
+            if (state.suggestedBlock && !state.isExecuting) {
+                const { type, name, icon } = state.suggestedBlock;
+
+                if (type === 'execute') {
+                    executeCode();
+                } else {
+                    addBlock(type, name, icon);
+                }
+            }
+        });
+
+        // --- Pose Recognition ---
+        const suggestionBox = document.getElementById('suggestion-box');
+        const suggestionText = document.getElementById('suggestion-text');
+        const suggestionIcon_El = document.querySelector('#suggestion-box .block-icon');
+
+        function setSuggestion(type, name, icon) {
+            if (state.currentMotion === type) return;
+
+            state.currentMotion = type;
+
+            if (type) {
+                state.suggestedBlock = { type, name, icon };
+                suggestionBox.classList.add('visible');
+                suggestionText.innerText = name;
+                suggestionIcon_El.innerText = icon;
+                logEvent('motion_detected', { type });
+            } else {
+                state.suggestedBlock = null;
+                suggestionBox.classList.remove('visible');
+            }
+        }
+
+        function onResults(results) {
+            if (!results.poseLandmarks) return;
+
+            // Draw skeleton
+            const canvasCtx = document.getElementById('output-canvas').getContext('2d');
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
+
+            if (results.poseLandmarks) {
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                    { color: '#00FF00', lineWidth: 4 });
+                drawLandmarks(canvasCtx, results.poseLandmarks,
+                    { color: '#FF0000', lineWidth: 2 });
+            }
+            canvasCtx.restore();
+
+            // Recognize Logic
+            const lm = results.poseLandmarks;
+            const now = Date.now();
+
+            // Debounce slightly to prevent flickering
+            if (now - state.lastMotionTime < 500) return;
+
+            /* Landmark Indices:
+               11: Left Shoulder, 12: Right Shoulder
+               13: Left Elbow, 14: Right Elbow
+               15: Left Wrist, 16: Right Wrist
+               0: Nose
+            */
+            const nose = lm[0];
+            const leftShoe = lm[11];
+            const rightShoe = lm[12];
+            const leftWrist = lm[15];
+            const rightWrist = lm[16];
+
+            let detected = null;
+
+            // Thresholds
+            const armLevelThresh = 0.15; // Tolerance for horizontal match
+
+            // 1. Hands Up (Both wrists higher than nose)
+            if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
+                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
+            }
+            // 2. Head Touch (Hands on Head) - Wrists close to nose/eyes
+            else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
+                Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
+                detected = { type: 'execute', name: '실행하기', icon: '▶️' };
+            }
+            // 3. Right Hand Horizontal (Right wrist extended out, Y aligned with shoulder)
+            else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
+                // Note: Camera is mirrored? x decreases as you move left (screen-right)
+                // But MediaPipe normalized coords: x: 0(left) -> 1(right).
+                // Mirroring is handled by CSS transform.
+                // Let's rely on relative position. if wrist.x < shoulder.x means it's to the RIGHT of the body (user's right)
+                // Wait, standard MediaPipe: left is 0, right is 1.
+                // User's Left Shoulder is x ~ 0.6, Right Shoulder x ~ 0.4
+                // User raises Right hand to THEIR right -> x becomes smaller (closer to 0) in NON-mirrored?
+                // Let's assume standard webcam feed mirrored for user:
+                // MediaPipe output is NOT mirrored by default coordinates.
+                // User right hand is index 16.
+                // When user raises right hand to right side, x decreases (screen left).
+                detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
+            }
+            // 4. Left Hand Horizontal
+            else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
+                detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
+            }
+
+            if (detected) {
+                setSuggestion(detected.type, detected.name, detected.icon);
+            } else {
+                setSuggestion(null);
+            }
+        }
+
+        // --- Init ---
+        initLogger();
+        initStage(1);
+
+        const videoElement = document.getElementById('input-video');
+        const canvasElement = document.getElementById('output-canvas');
+        canvasElement.width = 640;
+        canvasElement.height = 480;
+
+        const pose = new Pose({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+            }
+        });
+        pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        pose.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await pose.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        });
+        camera.start();
+
+    </script>
+</body>
+
+</html>
