@@ -4,10 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모션 코딩: 미로 탈출</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <title>모션 코딩: 미로 탈출 (Mouse Version)</title>
     <style>
         body {
             margin: 0;
@@ -24,93 +21,66 @@
             position: relative;
         }
 
-        /* Left Panel - Camera & Motion Info */
-        #camera-panel {
-            width: 50%;
+        /* Left Panel - Control Palette */
+        #control-panel {
+            width: 40%;
             position: relative;
             border-right: 2px solid #333;
             display: flex;
             flex-direction: column;
-        }
-
-        #video-container {
-            position: relative;
-            width: 100%;
-            height: 0;
-            padding-bottom: 75%;
-            /* 4:3 aspect ratio */
-            overflow: hidden;
-            background: black;
-        }
-
-        #input-video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: scaleX(-1);
-            object-fit: cover;
-        }
-
-        #output-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            transform: scaleX(-1);
-        }
-
-        #overlay-ui {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        #suggestion-box {
-            background: rgba(0, 0, 0, 0.7);
             padding: 20px;
-            border-radius: 15px;
+            background: #252526;
+        }
+
+        h2 {
             text-align: center;
-            border: 3px solid #00ff00;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: auto;
+            color: #ffd700;
+        }
+
+        #block-palette {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .palette-btn {
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             cursor: pointer;
-        }
-
-        #suggestion-box.visible {
-            opacity: 1;
-        }
-
-        .block-icon {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .block-text {
-            font-size: 24px;
+            transition: all 0.2s;
+            color: white;
+            font-size: 18px;
             font-weight: bold;
         }
 
-        .help-text {
-            font-size: 14px;
-            color: #ccc;
-            margin-top: 5px;
+        .palette-btn:hover {
+            transform: translateX(5px);
+            background: #444;
+            border-color: #007acc;
+        }
+
+        .palette-btn span {
+            font-size: 30px;
+        }
+
+        .palette-btn.execute {
+            border-color: #d32f2f;
+            background: #5a1a1a;
+        }
+
+        .palette-btn.execute:hover {
+            background: #d32f2f;
         }
 
         /* Right Panel - Maze & Code */
         #game-panel {
-            width: 50%;
+            width: 60%;
             display: flex;
             flex-direction: column;
             padding: 20px;
@@ -200,7 +170,7 @@
             height: 50px;
         }
 
-        button {
+        button.action-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -275,6 +245,11 @@
             background: #007acc;
             padding: 15px 30px;
             font-size: 20px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -282,29 +257,35 @@
 <body>
 
     <div id="container">
-        <!-- Camera Section -->
-        <div id="camera-panel">
-            <div id="video-container">
-                <video id="input-video"></video>
-                <canvas id="output-canvas"></canvas>
-                <div id="overlay-ui">
-                    <div id="suggestion-box">
-                        <span class="block-icon">❓</span>
-                        <span class="block-text" id="suggestion-text">동작 대기 중...</span>
-                        <div class="help-text">화면을 클릭하여 추가</div>
-                    </div>
+        <!-- Control Section -->
+        <div id="control-panel">
+            <h2>🧩 블록 팔레트</h2>
+            <p style="text-align: center; color: #ccc;">버튼을 클릭하여 코드를 추가하세요.</p>
+
+            <div id="block-palette">
+                <div class="palette-btn" onclick="addBlock('move_forward', '앞으로 이동', '⬆️')">
+                    <span>⬆️</span> 앞으로 이동
+                </div>
+                <div class="palette-btn" onclick="addBlock('turn_left', '왼쪽 회전', '↩️')">
+                    <span>↩️</span> 왼쪽 회전
+                </div>
+                <div class="palette-btn" onclick="addBlock('turn_right', '오른쪽 회전', '↪️')">
+                    <span>↪️</span> 오른쪽 회전
+                </div>
+                <!-- Separator -->
+                <div style="height: 20px;"></div>
+                <div class="palette-btn execute" onclick="executeCode()">
+                    <span>▶️</span> 실행하기
                 </div>
             </div>
 
-            <div style="flex:1; padding: 20px;">
-                <h3>사용 방법</h3>
+            <div style="margin-top: auto; padding: 20px; background: #333; border-radius: 10px;">
+                <h4>사용 방법</h4>
                 <ul>
-                    <li>🖐 오른손 수평: <b>오른쪽 회전</b></li>
-                    <li>🖐 왼손 수평: <b>왼쪽 회전</b></li>
-                    <li>🙌 만세: <b>앞으로 이동</b></li>
-                    <li>🙆 두 손 머리: <b>실행하기</b></li>
+                    <li>1. 원하는 명령 블록을 클릭하세요.</li>
+                    <li>2. 코드가 완성되면 '실행하기'를 누르세요.</li>
+                    <li>3. 잘못 추가한 블록은 오른쪽 코드 영역에서 클릭하여 삭제하세요.</li>
                 </ul>
-                <p style="color: #ccc; font-size: 0.9em;">* 블록을 클릭하면 삭제할 수 있습니다.</p>
             </div>
         </div>
 
@@ -319,8 +300,8 @@
                 <div id="controls-area">
                     <span style="font-weight: bold; color: #ccc;">작성된 코드:</span>
                     <div>
-                        <button id="btn-delete">전체 삭제</button>
-                        <button id="btn-download">로그 다운로드</button>
+                        <button id="btn-delete" class="action-btn">전체 삭제</button>
+                        <button id="btn-download" class="action-btn">로그 다운로드</button>
                     </div>
                 </div>
                 <div id="code-area"></div>
@@ -346,6 +327,7 @@
             logs: [],
             codeBlocks: [],
             isExecuting: false,
+            // Mouse version doesn't use these but kept for compatibility logic
             currentMotion: null,
             suggestedBlock: null,
             lastMotionTime: 0
@@ -359,7 +341,8 @@
                 localStorage.setItem('participant_id', pid);
             }
             state.participantId = pid;
-            logEvent('session_start');
+            // Differentiate session
+            logEvent('session_start', { input_mode: 'mouse' });
         }
 
         function logEvent(type, data = {}) {
@@ -395,7 +378,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
+            downloadAnchorNode.setAttribute("download", `mouse_coding_log_${state.sessionId}.json`);
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
@@ -656,15 +639,12 @@
             });
         }
 
-        function addBlock(type, name, icon, confidence = null) {
+        function addBlock(type, name, icon) {
             if (state.isExecuting) return;
             state.codeBlocks.push({ type, name, icon });
 
-            const logData = { type, name };
-            if (confidence !== null) {
-                logData.motion_confidence = confidence;
-            }
-            logEvent('block_confirmed', logData);
+            // Mouse version doesn't use confidence
+            logEvent('block_confirmed', { type, name, input: 'mouse' });
             updateCodeUI();
         }
 
@@ -686,159 +666,9 @@
         document.getElementById('btn-delete').onclick = clearAllBlocks;
         document.getElementById('btn-download').onclick = downloadLogs;
 
-        // Global click listener for confirming suggestions
-        document.body.addEventListener('click', (e) => {
-            // Ignore clicks on buttons
-            if (e.target.tagName === 'BUTTON') return;
-
-            if (state.suggestedBlock && !state.isExecuting) {
-                const { type, name, icon, confidence } = state.suggestedBlock;
-
-                if (type === 'execute') {
-                    executeCode();
-                } else {
-                    addBlock(type, name, icon, confidence);
-                }
-            }
-        });
-
-        // --- Pose Recognition ---
-        const suggestionBox = document.getElementById('suggestion-box');
-        const suggestionText = document.getElementById('suggestion-text');
-        const suggestionIcon_El = document.querySelector('#suggestion-box .block-icon');
-
-        function setSuggestion(type, name, icon, confidence = null) {
-            if (state.currentMotion === type) return;
-
-            state.currentMotion = type;
-
-            if (type) {
-                state.suggestedBlock = { type, name, icon, confidence };
-                suggestionBox.classList.add('visible');
-                suggestionText.innerText = name;
-                suggestionIcon_El.innerText = icon;
-
-                const logData = { type };
-                if (confidence !== null) {
-                    logData.motion_confidence = confidence;
-                }
-                logEvent('motion_detected', logData);
-            } else {
-                state.suggestedBlock = null;
-                suggestionBox.classList.remove('visible');
-            }
-        }
-
-        function onResults(results) {
-            if (!results.poseLandmarks) return;
-
-            // Draw skeleton
-            const canvasCtx = document.getElementById('output-canvas').getContext('2d');
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-            canvasCtx.drawImage(results.image, 0, 0, canvasCtx.canvas.width, canvasCtx.canvas.height);
-
-            if (results.poseLandmarks) {
-                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-                    { color: '#00FF00', lineWidth: 4 });
-                drawLandmarks(canvasCtx, results.poseLandmarks,
-                    { color: '#FF0000', lineWidth: 2 });
-            }
-            canvasCtx.restore();
-
-            // Recognize Logic
-            const lm = results.poseLandmarks;
-            const now = Date.now();
-
-            // Debounce slightly to prevent flickering
-            if (now - state.lastMotionTime < 500) return;
-
-            /* Landmark Indices:
-               11: Left Shoulder, 12: Right Shoulder
-               13: Left Elbow, 14: Right Elbow
-               15: Left Wrist, 16: Right Wrist
-               0: Nose
-            */
-            const nose = lm[0];
-            const leftShoe = lm[11];
-            const rightShoe = lm[12];
-            const leftWrist = lm[15];
-            const rightWrist = lm[16];
-
-            let detected = null;
-            let confidence = 0;
-
-            // Thresholds
-            const armLevelThresh = 0.15; // Tolerance for horizontal match
-
-            // Helper to get average visibility of key landmarks involved
-            function getAvgVisibility(...landmarks) {
-                const sum = landmarks.reduce((acc, l) => acc + (l.visibility || 0), 0);
-                return sum / landmarks.length;
-            }
-
-            // 1. Hands Up (Both wrists higher than nose)
-            if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
-                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
-                confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-            }
-            // 2. Head Touch (Hands on Head) - Wrists close to nose/eyes
-            else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
-                Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
-                detected = { type: 'execute', name: '실행하기', icon: '▶️' };
-                confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-            }
-            // 3. Right Hand Horizontal (Right wrist extended out, Y aligned with shoulder)
-            else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
-                detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
-                confidence = getAvgVisibility(rightWrist, rightShoe);
-            }
-            // 4. Left Hand Horizontal
-            else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
-                detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
-                confidence = getAvgVisibility(leftWrist, leftShoe);
-            }
-
-            if (detected) {
-                // Round confidence to 2 decimal places
-                confidence = Math.round(confidence * 100) / 100;
-                setSuggestion(detected.type, detected.name, detected.icon, confidence);
-            } else {
-                setSuggestion(null);
-            }
-        }
-
         // --- Init ---
         initLogger();
         initStage(1);
-
-        const videoElement = document.getElementById('input-video');
-        const canvasElement = document.getElementById('output-canvas');
-        canvasElement.width = 640;
-        canvasElement.height = 480;
-
-        const pose = new Pose({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-            }
-        });
-        pose.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
-            enableSegmentation: false,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-        pose.onResults(onResults);
-
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await pose.send({ image: videoElement });
-            },
-            width: 640,
-            height: 480
-        });
-        camera.start();
 
     </script>
 </body>
