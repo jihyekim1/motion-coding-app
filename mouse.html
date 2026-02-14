@@ -11,7 +11,7 @@
             padding: 0;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e1e;
+            background: radial-gradient(circle at center, #2e1a47, #1a0b2e);
             color: white;
         }
 
@@ -45,8 +45,8 @@
         }
 
         .palette-btn {
-            background: #333;
-            border: 2px solid #555;
+            background: #5e35b1;
+            border: 2px solid #7e57c2;
             border-radius: 10px;
             padding: 15px;
             display: flex;
@@ -57,25 +57,31 @@
             color: white;
             font-size: 18px;
             font-weight: bold;
+            box-shadow: 0 4px 0 #4527a0;
         }
 
         .palette-btn:hover {
-            transform: translateX(5px);
-            background: #444;
-            border-color: #007acc;
+            transform: translateY(2px);
+            filter: brightness(1.2);
+            box-shadow: 0 2px 0 #4527a0;
         }
+
+        .palette-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+
 
         .palette-btn span {
             font-size: 30px;
         }
 
         .palette-btn.execute {
-            border-color: #d32f2f;
-            background: #5a1a1a;
-        }
-
-        .palette-btn.execute:hover {
-            background: #d32f2f;
+            background: #c2185b;
+            border-color: #e91e63;
+            box-shadow: 0 4px 0 #880e4f;
+            margin-top: 20px;
         }
 
         /* Right Panel - Maze & Code */
@@ -89,30 +95,53 @@
 
         #maze-container {
             flex: 2;
-            background: #2a2a2a;
-            border-radius: 10px;
+            background: rgba(40, 20, 60, 0.5);
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
             display: flex;
+            flex-direction: column;
+            /* Stack stage info and canvas */
             justify-content: center;
             align-items: center;
             position: relative;
+            box-shadow: 0 0 30px rgba(100, 50, 150, 0.3);
         }
 
         #maze-canvas {
-            background: #fff;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: transparent;
+            /* box-shadow removed for cleaner look, or keep */
         }
 
         #stage-info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 32px;
             font-weight: bold;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
+            color: #d1c4e9;
+            text-shadow: 0 0 10px #7e57c2;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #7e57c2;
+            color: #d1c4e9;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(126, 87, 194, 0.5);
+            transform: scale(1.1);
         }
 
         #bottom-panel {
@@ -204,14 +233,18 @@
         /* Hidden, interaction by motion */
 
         #console-log {
-            height: 100px;
-            background: #111;
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
             color: #0f0;
             font-family: monospace;
-            padding: 10px;
-            overflow-y: auto;
-            border-radius: 5px;
             font-size: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            margin-top: 10px;
+            box-sizing: border-box;
         }
 
         /* Modal for Stage Clear */
@@ -229,27 +262,34 @@
         }
 
         #modal-content {
-            background: #333;
-            padding: 40px;
-            border-radius: 10px;
+            background: #2e1a47;
+            padding: 50px;
+            border-radius: 20px;
             text-align: center;
+            border: 4px solid #7e57c2;
+            box-shadow: 0 0 50px rgba(126, 87, 194, 0.5);
         }
 
         #modal-title {
-            font-size: 32px;
-            color: #ffd700;
-            margin-bottom: 20px;
+            font-size: 40px;
+            margin-bottom: 30px;
         }
 
         #modal-btn {
-            background: #007acc;
-            padding: 15px 30px;
-            font-size: 20px;
+            background: linear-gradient(135deg, #00acc1, #006064);
+            padding: 20px 40px;
+            font-size: 24px;
             border: none;
             color: white;
             font-weight: bold;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 6px 0 #00363a;
+        }
+
+        #modal-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
         }
     </style>
 </head>
@@ -279,12 +319,13 @@
                 </div>
             </div>
 
-            <div style="margin-top: auto; padding: 20px; background: #333; border-radius: 10px;">
-                <h4>사용 방법</h4>
-                <ul>
+            <div
+                style="margin-top: auto; padding: 20px; background: #2e1a47; border-radius: 10px; border: 1px solid #7e57c2;">
+                <h4 style="margin-top: 0; color: #ffd700;">사용 방법</h4>
+                <ul style="padding-left: 20px; line-height: 1.6; color: #d1c4e9;">
                     <li>1. 원하는 명령 블록을 클릭하세요.</li>
                     <li>2. 코드가 완성되면 '실행하기'를 누르세요.</li>
-                    <li>3. 잘못 추가한 블록은 오른쪽 코드 영역에서 클릭하여 삭제하세요.</li>
+                    <li>3. 블록을 클릭하면 삭제됩니다.</li>
                 </ul>
             </div>
         </div>
@@ -292,16 +333,18 @@
         <!-- Game Section -->
         <div id="game-panel">
             <div id="maze-container">
-                <div id="stage-info">Stage 1</div>
+                <div id="stage-info">
+                    <button class="nav-btn" onclick="prevStage()">&#10094;</button>
+                    <span id="stage-text">Stage 1 / 15</span>
+                    <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
+                </div>
                 <canvas id="maze-canvas" width="400" height="400"></canvas>
             </div>
 
             <div id="bottom-panel">
-                <div id="controls-area">
-                    <span style="font-weight: bold; color: #ccc;">작성된 코드:</span>
-                    <div>
-                        <button id="btn-delete" class="action-btn">전체 삭제</button>
-                        <button id="btn-download" class="action-btn">로그 다운로드</button>
+                <div id="controls-area" style="justify-content: flex-end;">
+                    <div style="display:flex; gap: 10px;">
+                        <button id="btn-download" class="action-btn">로그 저장</button>
                     </div>
                 </div>
                 <div id="code-area"></div>
@@ -368,10 +411,12 @@
             state.logs.push(entry);
             console.log(`[LOG] ${type}`, data);
 
-            const consoleEl = document.getElementById('console-log');
-            const timeStr = now.toLocaleTimeString() + '.' + ms;
-            consoleEl.innerHTML += `<div>[${timeStr}] ${type}: ${JSON.stringify(data)}</div>`;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+            // On-screen log
+            const logDiv = document.getElementById('console-log');
+            const logLine = document.createElement('div');
+            logLine.innerText = `[${h}:${min}:${s}] ${type}: ${JSON.stringify(data)}`;
+            logDiv.appendChild(logLine);
+            logDiv.scrollTop = logDiv.scrollHeight;
         }
 
         function downloadLogs() {
@@ -413,10 +458,13 @@
         const ctx = mazeCanvas.getContext('2d');
 
         function initStage(id) {
+            if (id < 1) id = 1;
+            if (id > 15) id = 15;
             state.stageId = id;
-            document.getElementById('stage-info').innerText = `Stage ${id}`;
+            document.getElementById('stage-text').innerText = `Stage ${id} / 15`;
             resetPlayer();
-            drawMaze();
+            if (catImage.complete) drawMaze();
+            else catImage.onload = drawMaze;
         }
 
         function resetPlayer() {
@@ -462,22 +510,43 @@
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
                     const cell = grid[y][x];
-                    if (cell === 0) {
-                        ctx.fillStyle = '#222'; // Wall (Darker)
-                    } else if (cell === 1) {
-                        ctx.fillStyle = '#444'; // Path (Dark/Neutral - removed highlight)
-                        // Optional: Add subtle border to distinguish tiles
-                        ctx.strokeStyle = '#555';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    } else if (cell === 2) {
-                        ctx.fillStyle = '#f1c40f'; // Goal (Golden)
+                    const px = x * TILE_SIZE;
+                    const py = y * TILE_SIZE;
+
+                    // Rounded Rect function
+                    function roundRect(x, y, w, h, radius, fill) {
+                        ctx.beginPath();
+                        ctx.moveTo(x + radius, y);
+                        ctx.lineTo(x + w - radius, y);
+                        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+                        ctx.lineTo(x + w, y + h - radius);
+                        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                        ctx.lineTo(x + radius, y + h);
+                        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+                        ctx.lineTo(x, y + radius);
+                        ctx.quadraticCurveTo(x, y, x + radius, y);
+                        ctx.closePath();
+                        ctx.fillStyle = fill;
+                        ctx.fill();
                     }
 
-                    if (cell !== 1) { // Fill valid non-path cells or just path
-                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    } else {
-                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    if (cell === 1) {
+                        // Path Tile: Light Purple
+                        roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#7e57c2');
+                        // Add a little sheen/star icon?
+                        ctx.fillStyle = "rgba(255,255,255,0.2)";
+                        ctx.beginPath();
+                        ctx.arc(px + 20, py + 20, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (cell === 2) {
+                        // Goal Tile: Pink/Red
+                        roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#ec407a');
+                        // Planet/Ring pattern
+                        ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.ellipse(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 20, 8, Math.PI / 4, 0, Math.PI * 2);
+                        ctx.stroke();
                     }
                 }
             }
@@ -628,9 +697,17 @@
             updateCodeUI();
         }
 
-        document.getElementById('btn-delete').innerText = "전체 삭제";
-        document.getElementById('btn-delete').onclick = clearAllBlocks;
+
         document.getElementById('btn-download').onclick = downloadLogs;
+
+        // Dev Navigation
+        window.prevStage = () => {
+            initStage(state.stageId - 1);
+        };
+
+        window.nextStageDev = () => {
+            initStage(state.stageId + 1);
+        };
 
         // --- Init ---
         initLogger();

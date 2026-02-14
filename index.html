@@ -106,12 +106,35 @@
         }
 
         #stage-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
             font-size: 32px;
             font-weight: bold;
             color: #d1c4e9;
             text-shadow: 0 0 10px #7e57c2;
             margin-bottom: 20px;
             /* Space below title */
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #7e57c2;
+            color: #d1c4e9;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(126, 87, 194, 0.5);
+            transform: scale(1.1);
         }
 
 
@@ -319,7 +342,11 @@
     <div id="container">
         <!-- Game Panel -->
         <div id="game-panel">
-            <div id="stage-info">Stage 1</div>
+            <div id="stage-info">
+                <button class="nav-btn" onclick="prevStage()">&#10094;</button>
+                <span id="stage-text">Stage 1 / 15</span>
+                <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
+            </div>
 
             <div id="maze-container">
                 <canvas id="maze-canvas" width="400" height="400"></canvas>
@@ -459,10 +486,12 @@
                 const ctx = mazeCanvas.getContext('2d');
 
                 function initStage(id) {
+                    if (id < 1) id = 1;
+                    if (id > 15) id = 15;
                     state.stageId = id;
-                    document.getElementById('stage-info').innerText = `Stage ${id} / 15`;
+                    document.getElementById('stage-text').innerText = `Stage ${id} / 15`;
                     resetPlayer();
-                    // Wait for car image to load if needed, but here we just draw
+                    // Wait for cat image to load if needed, but here we just draw
                     if (catImage.complete) drawMaze();
                     else catImage.onload = drawMaze;
                 }
@@ -673,6 +702,15 @@
                 }
 
                 document.getElementById('btn-download').onclick = downloadLogs;
+
+                // Dev Navigation
+                window.prevStage = () => {
+                    initStage(state.stageId - 1);
+                };
+
+                window.nextStageDev = () => {
+                    initStage(state.stageId + 1);
+                };
 
                 // --- Pose Recognition & Handlers ---
                 // (Similar to previous, but ensuring no redraw overlap or double declare)
