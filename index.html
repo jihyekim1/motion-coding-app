@@ -175,10 +175,22 @@
             align-items: center;
             gap: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            /* Clickable indicator */
+            transition: transform 0.1s;
+        }
+
+        .code-block:hover {
+            transform: scale(1.05);
+            background: #1177bb;
         }
 
         .code-block.execute {
             background: #d32f2f;
+        }
+
+        .code-block.execute:hover {
+            background: #f44336;
         }
 
         #controls-area {
@@ -292,6 +304,7 @@
                     <li>🙌 만세: <b>앞으로 이동</b></li>
                     <li>🙆 두 손 머리: <b>실행하기</b></li>
                 </ul>
+                <p style="color: #ccc; font-size: 0.9em;">* 블록을 클릭하면 삭제할 수 있습니다.</p>
             </div>
         </div>
 
@@ -306,7 +319,7 @@
                 <div id="controls-area">
                     <span style="font-weight: bold; color: #ccc;">작성된 코드:</span>
                     <div>
-                        <button id="btn-delete">마지막 블록 삭제</button>
+                        <button id="btn-delete">전체 삭제</button>
                         <button id="btn-download">로그 다운로드</button>
                     </div>
                 </div>
@@ -357,7 +370,8 @@
             const h = String(now.getHours()).padStart(2, '0');
             const min = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
-            const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}`;
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+            const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}.${ms}`;
 
             const entry = {
                 participant_id: state.participantId,
@@ -372,7 +386,7 @@
             console.log(`[LOG] ${type}`, data);
 
             const consoleEl = document.getElementById('console-log');
-            const timeStr = new Date().toLocaleTimeString();
+            const timeStr = now.toLocaleTimeString() + '.' + ms;
             consoleEl.innerHTML += `<div>[${timeStr}] ${type}: ${JSON.stringify(data)}</div>`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
@@ -578,25 +592,40 @@
                 const el = document.createElement('div');
                 el.className = `code-block ${block.type}`;
                 el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                el.title = "클릭하여 삭제";
+                el.onclick = () => removeBlockAtIndex(index);
                 area.appendChild(el);
             });
         }
 
-        function addBlock(type, name, icon) {
+        function addBlock(type, name, icon, confidence = null) {
             if (state.isExecuting) return;
             state.codeBlocks.push({ type, name, icon });
-            logEvent('block_confirmed', { type, name });
+
+            const logData = { type, name };
+            if (confidence !== null) {
+                logData.motion_confidence = confidence;
+            }
+            logEvent('block_confirmed', logData);
             updateCodeUI();
         }
 
-        function removeLastBlock() {
+        function removeBlockAtIndex(index) {
+            if (state.isExecuting) return;
+            const removed = state.codeBlocks.splice(index, 1)[0];
+            logEvent('block_deleted', { removed, index });
+            updateCodeUI();
+        }
+
+        function clearAllBlocks() {
             if (state.isExecuting || state.codeBlocks.length === 0) return;
-            const removed = state.codeBlocks.pop();
-            logEvent('block_deleted', { removed });
+            state.codeBlocks = [];
+            logEvent('all_blocks_cleared');
             updateCodeUI();
         }
 
-        document.getElementById('btn-delete').onclick = removeLastBlock;
+        document.getElementById('btn-delete').innerText = "전체 삭제";
+        document.getElementById('btn-delete').onclick = clearAllBlocks;
         document.getElementById('btn-download').onclick = downloadLogs;
 
         // Global click listener for confirming suggestions
@@ -605,12 +634,12 @@
             if (e.target.tagName === 'BUTTON') return;
 
             if (state.suggestedBlock && !state.isExecuting) {
-                const { type, name, icon } = state.suggestedBlock;
+                const { type, name, icon, confidence } = state.suggestedBlock;
 
                 if (type === 'execute') {
                     executeCode();
                 } else {
-                    addBlock(type, name, icon);
+                    addBlock(type, name, icon, confidence);
                 }
             }
         });
@@ -620,17 +649,22 @@
         const suggestionText = document.getElementById('suggestion-text');
         const suggestionIcon_El = document.querySelector('#suggestion-box .block-icon');
 
-        function setSuggestion(type, name, icon) {
+        function setSuggestion(type, name, icon, confidence = null) {
             if (state.currentMotion === type) return;
 
             state.currentMotion = type;
 
             if (type) {
-                state.suggestedBlock = { type, name, icon };
+                state.suggestedBlock = { type, name, icon, confidence };
                 suggestionBox.classList.add('visible');
                 suggestionText.innerText = name;
                 suggestionIcon_El.innerText = icon;
-                logEvent('motion_detected', { type });
+
+                const logData = { type };
+                if (confidence !== null) {
+                    logData.motion_confidence = confidence;
+                }
+                logEvent('motion_detected', logData);
             } else {
                 state.suggestedBlock = null;
                 suggestionBox.classList.remove('visible');
@@ -674,41 +708,41 @@
             const rightWrist = lm[16];
 
             let detected = null;
+            let confidence = 0;
 
             // Thresholds
             const armLevelThresh = 0.15; // Tolerance for horizontal match
 
+            // Helper to get average visibility of key landmarks involved
+            function getAvgVisibility(...landmarks) {
+                const sum = landmarks.reduce((acc, l) => acc + (l.visibility || 0), 0);
+                return sum / landmarks.length;
+            }
+
             // 1. Hands Up (Both wrists higher than nose)
             if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
                 detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
+                confidence = getAvgVisibility(leftWrist, rightWrist, nose);
             }
             // 2. Head Touch (Hands on Head) - Wrists close to nose/eyes
             else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
                 Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
                 detected = { type: 'execute', name: '실행하기', icon: '▶️' };
+                confidence = getAvgVisibility(leftWrist, rightWrist, nose);
             }
             // 3. Right Hand Horizontal (Right wrist extended out, Y aligned with shoulder)
             else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
-                // Note: Camera is mirrored? x decreases as you move left (screen-right)
-                // But MediaPipe normalized coords: x: 0(left) -> 1(right).
-                // Mirroring is handled by CSS transform.
-                // Let's rely on relative position. if wrist.x < shoulder.x means it's to the RIGHT of the body (user's right)
-                // Wait, standard MediaPipe: left is 0, right is 1.
-                // User's Left Shoulder is x ~ 0.6, Right Shoulder x ~ 0.4
-                // User raises Right hand to THEIR right -> x becomes smaller (closer to 0) in NON-mirrored?
-                // Let's assume standard webcam feed mirrored for user:
-                // MediaPipe output is NOT mirrored by default coordinates.
-                // User right hand is index 16.
-                // When user raises right hand to right side, x decreases (screen left).
                 detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
+                confidence = getAvgVisibility(rightWrist, rightShoe);
             }
             // 4. Left Hand Horizontal
             else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
                 detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
+                confidence = getAvgVisibility(leftWrist, leftShoe);
             }
 
             if (detected) {
-                setSuggestion(detected.type, detected.name, detected.icon);
+                setSuggestion(detected.type, detected.name, detected.icon, confidence);
             } else {
                 setSuggestion(null);
             }

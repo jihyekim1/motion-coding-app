@@ -32,6 +32,6 @@ git push -u origin main
 ## 4단계: 배포 확인
 
 1.  GitHub 저장소의 **Settings** -> **Pages** 메뉴로 이동합니다.
-2.  **Branch**를 `main`, 폴더를 `/(root)`로 설정하고 **Save**를 누릅니다.
+2.  **Branch**를 `master`, 폴더를 `/(root)`로 설정하고 **Save**를 누릅니다.
 3.  잠시 후 상단에 생성된 주소로 접속하면 웹앱이 배포된 것을 확인할 수 있습니다.
 
