@@ -21,21 +21,44 @@
         #container {
             display: flex;
             height: 100vh;
+            flex-direction: row-reverse;
+            /* Camera (Right in DOM) -> Left, Game (Left in DOM) -> Right */
             position: relative;
         }
 
+        /* Camera Panel (Left, 40%) */
+        #camera-panel {
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            /* Fix to top */
+            padding-top: 50px;
+            /* constant top spacing */
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 2px solid #5e35b1;
+            position: relative;
+            box-sizing: border-box;
+        }
+
         /* Video Input (Hidden for processing but shown for feedback) */
+        /* Video Input */
         #video-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 240px;
-            height: 180px;
-            border: 2px solid #5e35b1;
-            border-radius: 10px;
+            position: relative;
+            width: 85%;
+            /* Slightly wider */
+            max-width: 500px;
+            /* Larger max width */
+            aspect-ratio: 3/4;
+            /* Taller camera view */
+            border: 4px solid #5e35b1;
+            border-radius: 20px;
             overflow: hidden;
-            z-index: 10;
             background: #000;
+            box-shadow: 0 0 20px rgba(94, 53, 177, 0.5);
+            margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .input_video {
@@ -43,6 +66,8 @@
             height: 100%;
             transform: scaleX(-1);
             opacity: 0.6;
+            object-fit: cover;
+            /* Fill container without stretching */
         }
 
         .output_canvas {
@@ -52,15 +77,19 @@
             width: 100%;
             height: 100%;
             transform: scaleX(-1);
+            object-fit: cover;
+            /* Match video fill */
         }
 
+        /* Game Panel (Right, 60%) */
         #game-panel {
-            width: 100%;
+            flex: 1;
             display: flex;
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
             align-items: center;
+            justify-content: center;
         }
 
         #maze-container {
@@ -77,24 +106,23 @@
         }
 
         #stage-info {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
             font-size: 32px;
             font-weight: bold;
             color: #d1c4e9;
             text-shadow: 0 0 10px #7e57c2;
+            margin-bottom: 20px;
+            /* Space below title */
         }
+
+
 
         /* Suggestion Box */
         #suggestion-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
+            /* Changed from absolute to flow below video */
+            margin-top: 20px;
             background: rgba(94, 53, 177, 0.9);
-            padding: 30px 50px;
+            padding: 20px 40px;
             border-radius: 20px;
             text-align: center;
             display: none;
@@ -102,8 +130,13 @@
             z-index: 100;
             border: 3px solid #b39ddb;
             cursor: pointer;
+            width: 80%;
+            left: auto;
+            top: auto;
+            transform: none;
         }
 
+        /* Suggestion Animation */
         #suggestion-box.visible {
             display: block;
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -112,38 +145,49 @@
         @keyframes popIn {
             from {
                 opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
+                transform: scale(0.8);
             }
 
             to {
                 opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
+                transform: scale(1);
             }
         }
 
         #suggestion-icon {
-            font-size: 80px;
+            font-size: 60px;
             display: block;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
         #suggestion-text {
-            font-size: 28px;
+            font-size: 24px;
             color: white;
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        #suggestion-instruction {
+            font-size: 16px;
+            color: #b39ddb;
+            font-weight: normal;
         }
 
         /* Code Area */
         #code-area {
-            width: 80%;
-            height: 120px;
+            width: 90%;
+            min-height: 120px;
+            /* Allow growth */
             background: rgba(30, 20, 50, 0.8);
             border-radius: 15px;
             margin-top: 30px;
             padding: 15px;
             display: flex;
             gap: 10px;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            /* Enable wrapping */
+            align-content: flex-start;
+            /* Align rows to top */
             border: 2px solid #5e35b1;
             align-items: center;
         }
@@ -171,7 +215,9 @@
         #controls-area {
             margin-top: 20px;
             display: flex;
-            gap: 20px;
+            width: 100%;
+            justify-content: flex-end;
+            /* Align button to right */
         }
 
         button.action-btn {
@@ -252,8 +298,18 @@
         }
 
         #console-log {
-            display: none;
-            /* Hide log for cleaner UI match */
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            margin-top: 10px;
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -261,33 +317,36 @@
 <body>
 
     <div id="container">
+        <!-- Game Panel -->
+        <div id="game-panel">
+            <div id="stage-info">Stage 1</div>
+
+            <div id="maze-container">
+                <canvas id="maze-canvas" width="400" height="400"></canvas>
+            </div>
+
+            <div id="code-area"></div>
+
+            <!-- Log Container under code area -->
+            <div id="console-log"></div>
+
+            <div id="controls-area">
+                <button id="btn-download" class="action-btn">로그 저장</button>
+            </div>
+        </div>
+
         <!-- Camera Section -->
         <div id="camera-panel">
             <div id="video-container">
-                <video id="input-video"></video>
-                <div id="game-panel">
-                    <div id="stage-info">Stage 1</div>
-
-                    <div id="maze-container">
-                        <canvas id="maze-canvas" width="400" height="400"></canvas>
-                    </div>
-
-                    <div id="code-area"></div>
-
-                    <div id="controls-area">
-                        <button id="btn-delete" class="action-btn">마지막 블록 삭제 (Click)</button>
-                        <button id="btn-download" class="action-btn">로그 저장</button>
-                    </div>
-
-                    <!-- Hidden log container needed for logic -->
-                    <div id="console-log" style="display:none;"></div>
-                </div>
+                <video id="input-video" class="input_video"></video>
+                <canvas class="output_canvas" width="320" height="240"></canvas>
             </div>
 
             <div id="suggestion-box">
                 <div id="suggestion-icon"></div>
                 <div id="suggestion-text"></div>
-                <div style="font-size: 14px; margin-top: 10px; color: #ddd;">(유지하여 추가)</div>
+                <div id="suggestion-instruction"></div>
+                <div style="font-size: 12px; margin-top: 5px; color: #bbb;">(화면 터치하여 추가)</div>
             </div>
 
             <div id="modal-overlay">
@@ -352,6 +411,13 @@
                     };
                     state.logs.push(entry);
                     console.log(`[LOG] ${type}`, data);
+
+                    // On-screen log
+                    const logDiv = document.getElementById('console-log');
+                    const logLine = document.createElement('div');
+                    logLine.innerText = `[${h}:${min}:${s}] ${type}: ${JSON.stringify(data)}`;
+                    logDiv.appendChild(logLine);
+                    logDiv.scrollTop = logDiv.scrollHeight;
                 }
 
                 window.downloadLogs = () => {
@@ -394,7 +460,7 @@
 
                 function initStage(id) {
                     state.stageId = id;
-                    document.getElementById('stage-info').innerText = `Stage ${id}`;
+                    document.getElementById('stage-info').innerText = `Stage ${id} / 15`;
                     resetPlayer();
                     // Wait for car image to load if needed, but here we just draw
                     if (catImage.complete) drawMaze();
@@ -606,13 +672,12 @@
                     updateCodeUI();
                 }
 
-                document.getElementById('btn-delete').onclick = removeLastBlock;
                 document.getElementById('btn-download').onclick = downloadLogs;
 
                 // --- Pose Recognition & Handlers ---
                 // (Similar to previous, but ensuring no redraw overlap or double declare)
 
-                function setSuggestion(type, name, icon, confidence = null) {
+                function setSuggestion(type, name, icon, instruction, confidence = null) {
                     if (state.currentMotion === type) return;
                     state.currentMotion = type;
 
@@ -621,6 +686,7 @@
                         suggestionBox.classList.add('visible');
                         suggestionText.innerText = name;
                         suggestionIcon_El.innerText = icon;
+                        document.getElementById('suggestion-instruction').innerText = instruction;
 
                         // Add click listener just for this state if needed, or rely on global
                         const logData = { type };
@@ -632,14 +698,20 @@
                     }
                 }
 
-                // Global click for suggestion
-                document.getElementById('suggestion-box').addEventListener('click', () => {
+                // Global click for suggestion (Click Anywhere)
+                document.body.addEventListener('click', (e) => {
+                    // Ignore clicks on buttons
+                    if (e.target.closest('button')) return;
+
                     if (state.suggestedBlock && !state.isExecuting) {
                         const { type, name, icon, confidence } = state.suggestedBlock;
                         if (type === 'execute') {
                             executeCode();
                         } else {
                             addBlock(type, name, icon, confidence);
+                            // Visual feedback for adding
+                            suggestionBox.style.transform = "scale(1.1)";
+                            setTimeout(() => suggestionBox.style.transform = "scale(1)", 100);
                         }
                     }
                 });
@@ -682,29 +754,29 @@
 
                     // 1. Hands Up
                     if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
-                        detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
+                        detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙌 두 손을 위로' };
                         confidence = getAvgVisibility(leftWrist, rightWrist, nose);
                     }
                     // 2. Head Touch
                     else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
                         Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
-                        detected = { type: 'execute', name: '실행하기', icon: '▶️' };
+                        detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙆 머리에 손을 올리세요' };
                         confidence = getAvgVisibility(leftWrist, rightWrist, nose);
                     }
                     // 3. Right
                     else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
-                        detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
+                        detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
                         confidence = getAvgVisibility(rightWrist, rightShoe);
                     }
                     // 4. Left
                     else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
-                        detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
+                        detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
                         confidence = getAvgVisibility(leftWrist, leftShoe);
                     }
 
                     if (detected) {
                         confidence = Math.round(confidence * 100) / 100;
-                        setSuggestion(detected.type, detected.name, detected.icon, confidence);
+                        setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, confidence);
                     } else {
                         setSuggestion(null);
                     }
@@ -730,8 +802,8 @@
                     onFrame: async () => {
                         await pose.send({ image: videoElement });
                     },
-                    width: 320,
-                    height: 240
+                    width: 640, /* Higher resolution for better quality */
+                    height: 480
                 });
                 camera.start();
 
