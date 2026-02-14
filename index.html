@@ -456,6 +456,34 @@
             drawMaze();
         }
 
+        // Cat Image Asset (SVG Data URI)
+        const catSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+          <!-- Body -->
+          <ellipse cx="50" cy="60" rx="30" ry="35" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
+          <!-- Head -->
+          <circle cx="50" cy="35" r="25" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
+          <!-- Ears -->
+          <polygon points="30,25 20,5 45,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
+          <polygon points="70,25 80,5 55,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
+          <!-- Eyes -->
+          <circle cx="40" cy="30" r="3" fill="black"/>
+          <circle cx="60" cy="30" r="3" fill="black"/>
+          <!-- Nose -->
+          <polygon points="47,38 53,38 50,42" fill="pink"/>
+          <!-- Whiskers -->
+          <line x1="30" y1="40" x2="10" y2="38" stroke="black" stroke-width="2"/>
+          <line x1="30" y1="42" x2="10" y2="44" stroke="black" stroke-width="2"/>
+          <line x1="70" y1="40" x2="90" y2="38" stroke="black" stroke-width="2"/>
+          <line x1="70" y1="42" x2="90" y2="44" stroke="black" stroke-width="2"/>
+          <!-- Tail -->
+          <path d="M50,95 Q30,90 30,70" fill="none" stroke="#d35400" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        `.trim();
+
+        const catImage = new Image();
+        catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
+
         function drawMaze() {
             ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
 
@@ -466,34 +494,44 @@
                 for (let x = 0; x < GRID_SIZE; x++) {
                     const cell = grid[y][x];
                     if (cell === 0) {
-                        ctx.fillStyle = '#333'; // Wall
+                        ctx.fillStyle = '#222'; // Wall (Darker)
                     } else if (cell === 1) {
-                        ctx.fillStyle = '#eee'; // Path
+                        ctx.fillStyle = '#444'; // Path (Dark/Neutral - removed highlight)
+                        // Optional: Add subtle border to distinguish tiles
+                        ctx.strokeStyle = '#555';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else if (cell === 2) {
-                        ctx.fillStyle = '#ffd700'; // Goal
+                        ctx.fillStyle = '#f1c40f'; // Goal (Golden)
                     }
-                    ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    if (cell !== 1) { // Fill valid non-path cells or just path
+                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
                 }
             }
 
-            // Draw Player
+            // Draw Player (Cat)
             const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
             const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
 
             ctx.save();
             ctx.translate(cx, cy);
+
+            // Adjust rotation: standard SVG faces UP (0 degrees).
+            // Player dir: 0=Up, 1=Right, 2=Down, 3=Left
+            // Canvas rotation is clockwise.
+            // 0 -> 0 deg
+            // 1 -> 90 deg
+            // 2 -> 180 deg
+            // 3 -> 270 deg (-90)
             ctx.rotate(player.dir * 90 * Math.PI / 180);
 
-            // Arrow shape
-            ctx.beginPath();
-            ctx.moveTo(0, -20);
-            ctx.lineTo(15, 20);
-            ctx.lineTo(0, 10);
-            ctx.lineTo(-15, 20);
-            ctx.closePath();
-            ctx.fillStyle = 'red';
-            ctx.fill();
+            // Draw Image centered
+            const size = TILE_SIZE * 0.8; // 80% of tile size
+            ctx.drawImage(catImage, -size / 2, -size / 2, size, size);
 
             ctx.restore();
         }
@@ -742,6 +780,8 @@
             }
 
             if (detected) {
+                // Round confidence to 2 decimal places
+                confidence = Math.round(confidence * 100) / 100;
                 setSuggestion(detected.type, detected.name, detected.icon, confidence);
             } else {
                 setSuggestion(null);
