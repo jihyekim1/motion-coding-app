@@ -261,153 +261,155 @@
 <body>
 
     <div id="container">
-        <!-- Camera Section -->
-        <div id="camera-panel">
-            <div id="video-container">
-                <video id="input-video"></video>
-                <div id="game-panel">
-                    <div id="stage-info">Stage 1</div>
+        <!-- Main Game Area -->
+        <div id="game-panel">
+            <div id="stage-info">Stage 1</div>
 
-                    <div id="maze-container">
-                        <canvas id="maze-canvas" width="400" height="400"></canvas>
-                    </div>
-
-                    <div id="code-area"></div>
-
-                    <div id="controls-area">
-                        <button id="btn-delete" class="action-btn">마지막 블록 삭제 (Click)</button>
-                        <button id="btn-download" class="action-btn">로그 저장</button>
-                    </div>
-
-                    <!-- Hidden log container needed for logic -->
-                    <div id="console-log" style="display:none;"></div>
-                </div>
+            <div id="maze-container">
+                <canvas id="maze-canvas" width="400" height="400"></canvas>
             </div>
 
-            <div id="suggestion-box">
-                <div id="suggestion-icon"></div>
-                <div id="suggestion-text"></div>
-                <div style="font-size: 14px; margin-top: 10px; color: #ddd;">(유지하여 추가)</div>
+            <div id="code-area"></div>
+
+            <div id="controls-area">
+                <button id="btn-delete" class="action-btn">마지막 블록 삭제 (Click)</button>
+                <button id="btn-download" class="action-btn">로그 저장</button>
             </div>
 
-            <div id="modal-overlay">
-                <div id="modal-content">
-                    <div id="modal-title">스테이지 클리어!</div>
-                    <button id="modal-btn" onclick="nextStage()">다음 스테이지로</button>
-                </div>
+            <!-- Hidden log container needed for logic -->
+            <div id="console-log" style="display:none;"></div>
+        </div>
+
+        <!-- Camera Section (Top Right) -->
+        <div id="video-container">
+            <video class="input_video" id="input-video"></video>
+            <canvas class="output_canvas" width="320" height="240"></canvas>
+        </div>
+
+        <div id="suggestion-box">
+            <div id="suggestion-icon"></div>
+            <div id="suggestion-text"></div>
+            <div style="font-size: 14px; margin-top: 10px; color: #ddd;">(유지하여 추가)</div>
+        </div>
+
+        <div id="modal-overlay">
+            <div id="modal-content">
+                <div id="modal-title">스테이지 클리어!</div>
+                <button id="modal-btn" onclick="nextStage()">다음 스테이지로</button>
             </div>
+        </div>
 
-            <script type="module">
-                const videoElement = document.getElementsByClassName('input_video')[0];
-                const canvasElement = document.getElementsByClassName('output_canvas')[0];
-                const canvasCtx = canvasElement.getContext('2d');
-                const suggestionBox = document.getElementById('suggestion-box');
-                const suggestionIcon_El = document.getElementById('suggestion-icon');
-                const suggestionText = document.getElementById('suggestion-text');
+        <script type="module">
+            const videoElement = document.getElementsByClassName('input_video')[0];
+            const canvasElement = document.getElementsByClassName('output_canvas')[0];
+            const canvasCtx = canvasElement.getContext('2d');
+            const suggestionBox = document.getElementById('suggestion-box');
+            const suggestionIcon_El = document.getElementById('suggestion-icon');
+            const suggestionText = document.getElementById('suggestion-text');
 
-                // --- Global State ---
-                const state = {
-                    participantId: null,
-                    sessionId: crypto.randomUUID(),
-                    stageId: 1,
-                    attemptId: 0,
-                    logs: [],
-                    codeBlocks: [],
-                    isExecuting: false,
-                    currentMotion: null,
-                    suggestedBlock: null,
-                    lastMotionTime: 0
+            // --- Global State ---
+            const state = {
+                participantId: null,
+                sessionId: crypto.randomUUID(),
+                stageId: 1,
+                attemptId: 0,
+                logs: [],
+                codeBlocks: [],
+                isExecuting: false,
+                currentMotion: null,
+                suggestedBlock: null,
+                lastMotionTime: 0
+            };
+
+            // --- Logger ---
+            function initLogger() {
+                let pid = localStorage.getItem('participant_id');
+                if (!pid) {
+                    pid = crypto.randomUUID();
+                    localStorage.setItem('participant_id', pid);
+                }
+                state.participantId = pid;
+                logEvent('session_start');
+            }
+
+            function logEvent(type, data = {}) {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                const h = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                const ms = String(now.getMilliseconds()).padStart(3, '0');
+                const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}.${ms}`;
+
+                const entry = {
+                    participant_id: state.participantId,
+                    session_id: state.sessionId,
+                    stage_id: state.stageId,
+                    attempt_id: state.attemptId,
+                    timestamp: timestamp,
+                    event_type: type,
+                    ...data
                 };
+                state.logs.push(entry);
+                console.log(`[LOG] ${type}`, data);
+            }
 
-                // --- Logger ---
-                function initLogger() {
-                    let pid = localStorage.getItem('participant_id');
-                    if (!pid) {
-                        pid = crypto.randomUUID();
-                        localStorage.setItem('participant_id', pid);
-                    }
-                    state.participantId = pid;
-                    logEvent('session_start');
-                }
+            window.downloadLogs = () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            }
 
-                function logEvent(type, data = {}) {
-                    const now = new Date();
-                    const y = now.getFullYear();
-                    const m = String(now.getMonth() + 1).padStart(2, '0');
-                    const d = String(now.getDate()).padStart(2, '0');
-                    const h = String(now.getHours()).padStart(2, '0');
-                    const min = String(now.getMinutes()).padStart(2, '0');
-                    const s = String(now.getSeconds()).padStart(2, '0');
-                    const ms = String(now.getMilliseconds()).padStart(3, '0');
-                    const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}.${ms}`;
+            // --- Maze Game Logic ---
+            const TILE_SIZE = 80;
+            const GRID_SIZE = 5;
 
-                    const entry = {
-                        participant_id: state.participantId,
-                        session_id: state.sessionId,
-                        stage_id: state.stageId,
-                        attempt_id: state.attemptId,
-                        timestamp: timestamp,
-                        event_type: type,
-                        ...data
-                    };
-                    state.logs.push(entry);
-                    console.log(`[LOG] ${type}`, data);
-                }
+            // 15 Stages with Increasing Difficulty
+            const STAGES = {
+                1: { grid: [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 1, 1, 1, 2], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], start: { x: 0, y: 2, dir: 1 } },
+                2: { grid: [[0, 0, 0, 0, 0], [0, 0, 1, 1, 2], [0, 0, 1, 0, 0], [1, 1, 1, 0, 0], [0, 0, 0, 0, 0]], start: { x: 0, y: 3, dir: 1 } },
+                3: { grid: [[0, 0, 1, 1, 2], [0, 0, 1, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
+                4: { grid: [[0, 0, 0, 0, 0], [0, 1, 1, 1, 2], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0]], start: { x: 3, y: 4, dir: 0 } },
+                5: { grid: [[2, 1, 1, 0, 0], [0, 0, 1, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
+                6: { grid: [[0, 0, 0, 0, 0], [2, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0]], start: { x: 1, y: 4, dir: 0 } },
+                7: { grid: [[0, 0, 1, 2, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0]], start: { x: 3, y: 4, dir: 0 } },
+                8: { grid: [[2, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 0, 1, 0], [0, 0, 1, 1, 0]], start: { x: 2, y: 4, dir: 1 } },
+                9: { grid: [[0, 0, 2, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 1], [0, 0, 0, 0, 1]], start: { x: 4, y: 4, dir: 0 } },
+                10: { grid: [[0, 2, 0, 0, 0], [0, 1, 0, 0, 0], [1, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
+                11: { grid: [[0, 0, 0, 2, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0], [1, 1, 0, 0, 0], [1, 0, 0, 0, 0]], start: { x: 0, y: 4, dir: 0 } },
+                12: { grid: [[0, 0, 0, 0, 2], [1, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 0, 0]], start: { x: 2, y: 4, dir: 0 } },
+                13: { grid: [[2, 1, 0, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
+                14: { grid: [[0, 0, 0, 0, 0], [1, 1, 1, 1, 2], [1, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 1, 1]], start: { x: 4, y: 4, dir: 3 } },
+                15: { grid: [[2, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 1]], start: { x: 4, y: 4, dir: 3 } }
+            };
 
-                window.downloadLogs = () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
-                }
+            let player = { x: 0, y: 0, dir: 1 };
 
-                // --- Maze Game Logic ---
-                const TILE_SIZE = 80;
-                const GRID_SIZE = 5;
+            const mazeCanvas = document.getElementById('maze-canvas');
+            const ctx = mazeCanvas.getContext('2d');
 
-                // 15 Stages with Increasing Difficulty
-                const STAGES = {
-                    1: { grid: [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 1, 1, 1, 2], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], start: { x: 0, y: 2, dir: 1 } },
-                    2: { grid: [[0, 0, 0, 0, 0], [0, 0, 1, 1, 2], [0, 0, 1, 0, 0], [1, 1, 1, 0, 0], [0, 0, 0, 0, 0]], start: { x: 0, y: 3, dir: 1 } },
-                    3: { grid: [[0, 0, 1, 1, 2], [0, 0, 1, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
-                    4: { grid: [[0, 0, 0, 0, 0], [0, 1, 1, 1, 2], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0]], start: { x: 3, y: 4, dir: 0 } },
-                    5: { grid: [[2, 1, 1, 0, 0], [0, 0, 1, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
-                    6: { grid: [[0, 0, 0, 0, 0], [2, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0]], start: { x: 1, y: 4, dir: 0 } },
-                    7: { grid: [[0, 0, 1, 2, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0]], start: { x: 3, y: 4, dir: 0 } },
-                    8: { grid: [[2, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 1, 0], [0, 0, 0, 1, 0], [0, 0, 1, 1, 0]], start: { x: 2, y: 4, dir: 1 } },
-                    9: { grid: [[0, 0, 2, 0, 0], [0, 1, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 1], [0, 0, 0, 0, 1]], start: { x: 4, y: 4, dir: 0 } },
-                    10: { grid: [[0, 2, 0, 0, 0], [0, 1, 0, 0, 0], [1, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
-                    11: { grid: [[0, 0, 0, 2, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0], [1, 1, 0, 0, 0], [1, 0, 0, 0, 0]], start: { x: 0, y: 4, dir: 0 } },
-                    12: { grid: [[0, 0, 0, 0, 2], [1, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 0, 0]], start: { x: 2, y: 4, dir: 0 } },
-                    13: { grid: [[2, 1, 0, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0]], start: { x: 1, y: 4, dir: 1 } },
-                    14: { grid: [[0, 0, 0, 0, 0], [1, 1, 1, 1, 2], [1, 0, 0, 0, 0], [1, 1, 1, 0, 0], [0, 0, 1, 1, 1]], start: { x: 4, y: 4, dir: 3 } },
-                    15: { grid: [[2, 1, 1, 1, 0], [0, 0, 0, 1, 0], [0, 1, 1, 1, 0], [0, 1, 0, 0, 0], [0, 1, 1, 1, 1]], start: { x: 4, y: 4, dir: 3 } }
-                };
+            function initStage(id) {
+                state.stageId = id;
+                document.getElementById('stage-info').innerText = `Stage ${id}`;
+                resetPlayer();
+                // Wait for car image to load if needed, but here we just draw
+                if (catImage.complete) drawMaze();
+                else catImage.onload = drawMaze;
+            }
 
-                let player = { x: 0, y: 0, dir: 1 };
+            function resetPlayer() {
+                const config = STAGES[state.stageId];
+                player = { ...config.start };
+                drawMaze();
+            }
 
-                const mazeCanvas = document.getElementById('maze-canvas');
-                const ctx = mazeCanvas.getContext('2d');
-
-                function initStage(id) {
-                    state.stageId = id;
-                    document.getElementById('stage-info').innerText = `Stage ${id}`;
-                    resetPlayer();
-                    // Wait for car image to load if needed, but here we just draw
-                    if (catImage.complete) drawMaze();
-                    else catImage.onload = drawMaze;
-                }
-
-                function resetPlayer() {
-                    const config = STAGES[state.stageId];
-                    player = { ...config.start };
-                    drawMaze();
-                }
-
-                const catSvg = `
+            const catSvg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
           <ellipse cx="50" cy="60" rx="30" ry="35" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
           <circle cx="50" cy="35" r="25" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
@@ -423,319 +425,319 @@
           <path d="M50,95 Q30,90 30,70" fill="none" stroke="#d35400" stroke-width="5" stroke-linecap="round"/>
         </svg>
         `.trim();
-                const catImage = new Image();
-                catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
+            const catImage = new Image();
+            catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
 
-                function drawMaze() {
-                    ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-                    const grid = STAGES[state.stageId].grid;
+            function drawMaze() {
+                ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+                const grid = STAGES[state.stageId].grid;
 
-                    for (let y = 0; y < GRID_SIZE; y++) {
-                        for (let x = 0; x < GRID_SIZE; x++) {
-                            const cell = grid[y][x];
-                            const px = x * TILE_SIZE;
-                            const py = y * TILE_SIZE;
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    for (let x = 0; x < GRID_SIZE; x++) {
+                        const cell = grid[y][x];
+                        const px = x * TILE_SIZE;
+                        const py = y * TILE_SIZE;
 
-                            // Rounded Rect function
-                            function roundRect(x, y, w, h, radius, fill) {
-                                ctx.beginPath();
-                                ctx.moveTo(x + radius, y);
-                                ctx.lineTo(x + w - radius, y);
-                                ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-                                ctx.lineTo(x + w, y + h - radius);
-                                ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-                                ctx.lineTo(x + radius, y + h);
-                                ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-                                ctx.lineTo(x, y + radius);
-                                ctx.quadraticCurveTo(x, y, x + radius, y);
-                                ctx.closePath();
-                                ctx.fillStyle = fill;
-                                ctx.fill();
-                            }
-
-                            if (cell === 1) {
-                                // Path Tile: Light Purple
-                                roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#7e57c2');
-                                // Add a little sheen/star icon?
-                                ctx.fillStyle = "rgba(255,255,255,0.2)";
-                                ctx.beginPath();
-                                ctx.arc(px + 20, py + 20, 3, 0, Math.PI * 2);
-                                ctx.fill();
-                            } else if (cell === 2) {
-                                // Goal Tile: Pink/Red
-                                roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#ec407a');
-                                // Planet/Ring pattern
-                                ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                                ctx.lineWidth = 3;
-                                ctx.beginPath();
-                                ctx.ellipse(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 20, 8, Math.PI / 4, 0, Math.PI * 2);
-                                ctx.stroke();
-                            }
-                        }
-                    }
-
-                    // Draw Player
-                    const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
-                    const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
-                    ctx.save();
-                    ctx.translate(cx, cy);
-                    ctx.rotate(player.dir * 90 * Math.PI / 180);
-                    const size = TILE_SIZE * 0.8;
-                    ctx.drawImage(catImage, -size / 2, -size / 2, size, size);
-                    ctx.restore();
-                }
-
-                async function executeCode() {
-                    if (state.isExecuting) return;
-                    state.isExecuting = true;
-                    state.attemptId++;
-                    logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
-
-                    resetPlayer();
-                    await new Promise(r => setTimeout(r, 500));
-
-                    for (const block of state.codeBlocks) {
-                        await new Promise(r => setTimeout(r, 800));
-
-                        if (block.type === 'move_forward') {
-                            const dx = [0, 1, 0, -1];
-                            const dy = [-1, 0, 1, 0];
-                            const nx = player.x + dx[player.dir];
-                            const ny = player.y + dy[player.dir];
-
-                            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
-                                STAGES[state.stageId].grid[ny][nx] !== 0) {
-                                player.x = nx;
-                                player.y = ny;
-                                logEvent('action_move_success', { x: nx, y: ny });
-                            } else {
-                                logEvent('action_move_fail', { x: nx, y: ny });
-                            }
-                        } else if (block.type === 'turn_left') {
-                            player.dir = (player.dir + 3) % 4;
-                        } else if (block.type === 'turn_right') {
-                            player.dir = (player.dir + 1) % 4;
+                        // Rounded Rect function
+                        function roundRect(x, y, w, h, radius, fill) {
+                            ctx.beginPath();
+                            ctx.moveTo(x + radius, y);
+                            ctx.lineTo(x + w - radius, y);
+                            ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+                            ctx.lineTo(x + w, y + h - radius);
+                            ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                            ctx.lineTo(x + radius, y + h);
+                            ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+                            ctx.lineTo(x, y + radius);
+                            ctx.quadraticCurveTo(x, y, x + radius, y);
+                            ctx.closePath();
+                            ctx.fillStyle = fill;
+                            ctx.fill();
                         }
 
-                        drawMaze();
-                    }
-
-                    const grid = STAGES[state.stageId].grid;
-                    if (grid[player.y][player.x] === 2) {
-                        logEvent('execution_success');
-                        setTimeout(() => {
-                            showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700");
-                        }, 500);
-                    } else {
-                        logEvent('execution_fail');
-                        setTimeout(() => {
-                            showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444");
-                        }, 500);
-                        state.isExecuting = false;
-                    }
-                }
-
-                function showModal(title, btnText, action, color) {
-                    const overlay = document.getElementById('modal-overlay');
-                    const titleEl = document.getElementById('modal-title');
-                    const btnEl = document.getElementById('modal-btn');
-                    titleEl.innerText = title;
-                    titleEl.style.color = color;
-                    btnEl.innerText = btnText;
-                    btnEl.setAttribute('onclick', action);
-                    overlay.style.display = 'flex';
-                }
-
-                window.retryStage = () => {
-                    document.getElementById('modal-overlay').style.display = 'none';
-                    state.isExecuting = false;
-                    resetPlayer();
-                };
-
-                window.nextStage = () => {
-                    document.getElementById('modal-overlay').style.display = 'none';
-                    state.isExecuting = false;
-                    state.codeBlocks = [];
-                    updateCodeUI();
-                    if (state.stageId < 15) {
-                        initStage(state.stageId + 1);
-                    } else {
-                        alert("모든 스테이지를 클리어했습니다! 축하합니다!");
-                        logEvent('session_end');
-                    }
-                };
-
-                // --- Interaction Logic ---
-                function updateCodeUI() {
-                    const area = document.getElementById('code-area');
-                    area.innerHTML = '';
-                    state.codeBlocks.forEach((block, index) => {
-                        const el = document.createElement('div');
-                        el.className = `code-block ${block.type}`;
-                        el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                        el.title = "클릭하여 삭제";
-                        el.onclick = () => removeBlockAtIndex(index);
-                        area.appendChild(el);
-                    });
-                }
-
-                function addBlock(type, name, icon, confidence = null) {
-                    if (state.isExecuting) return;
-                    state.codeBlocks.push({ type, name, icon });
-
-                    const logData = { type, name };
-                    if (confidence !== null) {
-                        logData.motion_confidence = confidence;
-                    }
-                    logEvent('block_confirmed', logData);
-                    updateCodeUI();
-                }
-
-                function removeBlockAtIndex(index) {
-                    if (state.isExecuting) return;
-                    const removed = state.codeBlocks.splice(index, 1)[0];
-                    logEvent('block_deleted', { removed, index });
-                    updateCodeUI();
-                }
-
-                function removeLastBlock() {
-                    if (state.isExecuting || state.codeBlocks.length === 0) return;
-                    const index = state.codeBlocks.length - 1;
-                    const removed = state.codeBlocks.splice(index, 1)[0];
-                    logEvent('block_deleted', { removed, index });
-                    updateCodeUI();
-                }
-
-                document.getElementById('btn-delete').onclick = removeLastBlock;
-                document.getElementById('btn-download').onclick = downloadLogs;
-
-                // --- Pose Recognition & Handlers ---
-                // (Similar to previous, but ensuring no redraw overlap or double declare)
-
-                function setSuggestion(type, name, icon, confidence = null) {
-                    if (state.currentMotion === type) return;
-                    state.currentMotion = type;
-
-                    if (type) {
-                        state.suggestedBlock = { type, name, icon, confidence };
-                        suggestionBox.classList.add('visible');
-                        suggestionText.innerText = name;
-                        suggestionIcon_El.innerText = icon;
-
-                        // Add click listener just for this state if needed, or rely on global
-                        const logData = { type };
-                        if (confidence !== null) logData.motion_confidence = confidence;
-                        logEvent('motion_detected', logData);
-                    } else {
-                        state.suggestedBlock = null;
-                        suggestionBox.classList.remove('visible');
+                        if (cell === 1) {
+                            // Path Tile: Light Purple
+                            roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#7e57c2');
+                            // Add a little sheen/star icon?
+                            ctx.fillStyle = "rgba(255,255,255,0.2)";
+                            ctx.beginPath();
+                            ctx.arc(px + 20, py + 20, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (cell === 2) {
+                            // Goal Tile: Pink/Red
+                            roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#ec407a');
+                            // Planet/Ring pattern
+                            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.ellipse(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 20, 8, Math.PI / 4, 0, Math.PI * 2);
+                            ctx.stroke();
+                        }
                     }
                 }
 
-                // Global click for suggestion
-                document.getElementById('suggestion-box').addEventListener('click', () => {
-                    if (state.suggestedBlock && !state.isExecuting) {
-                        const { type, name, icon, confidence } = state.suggestedBlock;
-                        if (type === 'execute') {
-                            executeCode();
+                // Draw Player
+                const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
+                const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(player.dir * 90 * Math.PI / 180);
+                const size = TILE_SIZE * 0.8;
+                ctx.drawImage(catImage, -size / 2, -size / 2, size, size);
+                ctx.restore();
+            }
+
+            async function executeCode() {
+                if (state.isExecuting) return;
+                state.isExecuting = true;
+                state.attemptId++;
+                logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
+
+                resetPlayer();
+                await new Promise(r => setTimeout(r, 500));
+
+                for (const block of state.codeBlocks) {
+                    await new Promise(r => setTimeout(r, 800));
+
+                    if (block.type === 'move_forward') {
+                        const dx = [0, 1, 0, -1];
+                        const dy = [-1, 0, 1, 0];
+                        const nx = player.x + dx[player.dir];
+                        const ny = player.y + dy[player.dir];
+
+                        if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
+                            STAGES[state.stageId].grid[ny][nx] !== 0) {
+                            player.x = nx;
+                            player.y = ny;
+                            logEvent('action_move_success', { x: nx, y: ny });
                         } else {
-                            addBlock(type, name, icon, confidence);
+                            logEvent('action_move_fail', { x: nx, y: ny });
                         }
-                    }
-                });
-
-                // Pose Results
-                function onResults(results) {
-                    if (!results.poseLandmarks) return;
-
-                    // Draw skeleton on hidden canvas (or visible debug one)
-                    canvasCtx.save();
-                    canvasCtx.clearRect(0, 0, 320, 240);
-                    canvasCtx.drawImage(results.image, 0, 0, 320, 240);
-
-                    if (results.poseLandmarks) {
-                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-                            { color: '#00FF00', lineWidth: 4 });
-                        drawLandmarks(canvasCtx, results.poseLandmarks,
-                            { color: '#FF0000', lineWidth: 2 });
-                    }
-                    canvasCtx.restore();
-
-                    const lm = results.poseLandmarks;
-                    const now = Date.now();
-                    if (now - state.lastMotionTime < 500) return;
-
-                    const nose = lm[0];
-                    const leftShoe = lm[11]; // shoulder
-                    const rightShoe = lm[12];
-                    const leftWrist = lm[15];
-                    const rightWrist = lm[16];
-
-                    let detected = null;
-                    let confidence = 0;
-                    const armLevelThresh = 0.15;
-
-                    function getAvgVisibility(...landmarks) {
-                        const sum = landmarks.reduce((acc, l) => acc + (l.visibility || 0), 0);
-                        return sum / landmarks.length;
+                    } else if (block.type === 'turn_left') {
+                        player.dir = (player.dir + 3) % 4;
+                    } else if (block.type === 'turn_right') {
+                        player.dir = (player.dir + 1) % 4;
                     }
 
-                    // 1. Hands Up
-                    if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
-                        detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
-                        confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-                    }
-                    // 2. Head Touch
-                    else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
-                        Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
-                        detected = { type: 'execute', name: '실행하기', icon: '▶️' };
-                        confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-                    }
-                    // 3. Right
-                    else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
-                        detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
-                        confidence = getAvgVisibility(rightWrist, rightShoe);
-                    }
-                    // 4. Left
-                    else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
-                        detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
-                        confidence = getAvgVisibility(leftWrist, leftShoe);
-                    }
-
-                    if (detected) {
-                        confidence = Math.round(confidence * 100) / 100;
-                        setSuggestion(detected.type, detected.name, detected.icon, confidence);
-                    } else {
-                        setSuggestion(null);
-                    }
+                    drawMaze();
                 }
 
-                // Init
-                initLogger();
-                initStage(1);
+                const grid = STAGES[state.stageId].grid;
+                if (grid[player.y][player.x] === 2) {
+                    logEvent('execution_success');
+                    setTimeout(() => {
+                        showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700");
+                    }, 500);
+                } else {
+                    logEvent('execution_fail');
+                    setTimeout(() => {
+                        showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444");
+                    }, 500);
+                    state.isExecuting = false;
+                }
+            }
 
-                const pose = new Pose({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-                });
-                pose.setOptions({
-                    modelComplexity: 1,
-                    smoothLandmarks: true,
-                    enableSegmentation: false,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5
-                });
-                pose.onResults(onResults);
+            function showModal(title, btnText, action, color) {
+                const overlay = document.getElementById('modal-overlay');
+                const titleEl = document.getElementById('modal-title');
+                const btnEl = document.getElementById('modal-btn');
+                titleEl.innerText = title;
+                titleEl.style.color = color;
+                btnEl.innerText = btnText;
+                btnEl.setAttribute('onclick', action);
+                overlay.style.display = 'flex';
+            }
 
-                const camera = new Camera(videoElement, {
-                    onFrame: async () => {
-                        await pose.send({ image: videoElement });
-                    },
-                    width: 320,
-                    height: 240
-                });
-                camera.start();
+            window.retryStage = () => {
+                document.getElementById('modal-overlay').style.display = 'none';
+                state.isExecuting = false;
+                resetPlayer();
+            };
 
-            </script>
+            window.nextStage = () => {
+                document.getElementById('modal-overlay').style.display = 'none';
+                state.isExecuting = false;
+                state.codeBlocks = [];
+                updateCodeUI();
+                if (state.stageId < 15) {
+                    initStage(state.stageId + 1);
+                } else {
+                    alert("모든 스테이지를 클리어했습니다! 축하합니다!");
+                    logEvent('session_end');
+                }
+            };
+
+            // --- Interaction Logic ---
+            function updateCodeUI() {
+                const area = document.getElementById('code-area');
+                area.innerHTML = '';
+                state.codeBlocks.forEach((block, index) => {
+                    const el = document.createElement('div');
+                    el.className = `code-block ${block.type}`;
+                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                    el.title = "클릭하여 삭제";
+                    el.onclick = () => removeBlockAtIndex(index);
+                    area.appendChild(el);
+                });
+            }
+
+            function addBlock(type, name, icon, confidence = null) {
+                if (state.isExecuting) return;
+                state.codeBlocks.push({ type, name, icon });
+
+                const logData = { type, name };
+                if (confidence !== null) {
+                    logData.motion_confidence = confidence;
+                }
+                logEvent('block_confirmed', logData);
+                updateCodeUI();
+            }
+
+            function removeBlockAtIndex(index) {
+                if (state.isExecuting) return;
+                const removed = state.codeBlocks.splice(index, 1)[0];
+                logEvent('block_deleted', { removed, index });
+                updateCodeUI();
+            }
+
+            function removeLastBlock() {
+                if (state.isExecuting || state.codeBlocks.length === 0) return;
+                const index = state.codeBlocks.length - 1;
+                const removed = state.codeBlocks.splice(index, 1)[0];
+                logEvent('block_deleted', { removed, index });
+                updateCodeUI();
+            }
+
+            document.getElementById('btn-delete').onclick = removeLastBlock;
+            document.getElementById('btn-download').onclick = downloadLogs;
+
+            // --- Pose Recognition & Handlers ---
+            // (Similar to previous, but ensuring no redraw overlap or double declare)
+
+            function setSuggestion(type, name, icon, confidence = null) {
+                if (state.currentMotion === type) return;
+                state.currentMotion = type;
+
+                if (type) {
+                    state.suggestedBlock = { type, name, icon, confidence };
+                    suggestionBox.classList.add('visible');
+                    suggestionText.innerText = name;
+                    suggestionIcon_El.innerText = icon;
+
+                    // Add click listener just for this state if needed, or rely on global
+                    const logData = { type };
+                    if (confidence !== null) logData.motion_confidence = confidence;
+                    logEvent('motion_detected', logData);
+                } else {
+                    state.suggestedBlock = null;
+                    suggestionBox.classList.remove('visible');
+                }
+            }
+
+            // Global click for suggestion
+            document.getElementById('suggestion-box').addEventListener('click', () => {
+                if (state.suggestedBlock && !state.isExecuting) {
+                    const { type, name, icon, confidence } = state.suggestedBlock;
+                    if (type === 'execute') {
+                        executeCode();
+                    } else {
+                        addBlock(type, name, icon, confidence);
+                    }
+                }
+            });
+
+            // Pose Results
+            function onResults(results) {
+                if (!results.poseLandmarks) return;
+
+                // Draw skeleton on hidden canvas (or visible debug one)
+                canvasCtx.save();
+                canvasCtx.clearRect(0, 0, 320, 240);
+                canvasCtx.drawImage(results.image, 0, 0, 320, 240);
+
+                if (results.poseLandmarks) {
+                    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                        { color: '#00FF00', lineWidth: 4 });
+                    drawLandmarks(canvasCtx, results.poseLandmarks,
+                        { color: '#FF0000', lineWidth: 2 });
+                }
+                canvasCtx.restore();
+
+                const lm = results.poseLandmarks;
+                const now = Date.now();
+                if (now - state.lastMotionTime < 500) return;
+
+                const nose = lm[0];
+                const leftShoe = lm[11]; // shoulder
+                const rightShoe = lm[12];
+                const leftWrist = lm[15];
+                const rightWrist = lm[16];
+
+                let detected = null;
+                let confidence = 0;
+                const armLevelThresh = 0.15;
+
+                function getAvgVisibility(...landmarks) {
+                    const sum = landmarks.reduce((acc, l) => acc + (l.visibility || 0), 0);
+                    return sum / landmarks.length;
+                }
+
+                // 1. Hands Up
+                if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
+                    detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️' };
+                    confidence = getAvgVisibility(leftWrist, rightWrist, nose);
+                }
+                // 2. Head Touch
+                else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
+                    Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
+                    detected = { type: 'execute', name: '실행하기', icon: '▶️' };
+                    confidence = getAvgVisibility(leftWrist, rightWrist, nose);
+                }
+                // 3. Right
+                else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
+                    detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️' };
+                    confidence = getAvgVisibility(rightWrist, rightShoe);
+                }
+                // 4. Left
+                else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
+                    detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️' };
+                    confidence = getAvgVisibility(leftWrist, leftShoe);
+                }
+
+                if (detected) {
+                    confidence = Math.round(confidence * 100) / 100;
+                    setSuggestion(detected.type, detected.name, detected.icon, confidence);
+                } else {
+                    setSuggestion(null);
+                }
+            }
+
+            // Init
+            initLogger();
+            initStage(1);
+
+            const pose = new Pose({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+            });
+            pose.setOptions({
+                modelComplexity: 1,
+                smoothLandmarks: true,
+                enableSegmentation: false,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+            pose.onResults(onResults);
+
+            const camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await pose.send({ image: videoElement });
+                },
+                width: 320,
+                height: 240
+            });
+            camera.start();
+
+        </script>
 </body>
 
 </html>
