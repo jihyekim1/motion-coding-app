@@ -11,54 +11,71 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
-            overflow: hidden;
+            padding: 5px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: radial-gradient(circle at center, #2e1a47 0%, #1a0b2e 100%);
             color: white;
-        }
-
-        #container {
-            display: flex;
-            height: 100vh;
-            flex-direction: row-reverse;
-            /* Camera (Right in DOM) -> Left, Game (Left in DOM) -> Right */
-            position: relative;
-        }
-
-        /* Camera Panel (Left, 40%) */
-        #camera-panel {
-            width: 40%;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            /* Fix to top */
-            padding-top: 50px;
-            /* constant top spacing */
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
-            border-right: 2px solid #5e35b1;
-            position: relative;
+            height: 100vh;
+            overflow: hidden;
             box-sizing: border-box;
         }
 
-        /* Video Input (Hidden for processing but shown for feedback) */
-        /* Video Input */
+        h1 {
+            font-size: 1.5rem;
+            margin: 5px 0 10px 0;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            flex-shrink: 0;
+        }
+
+        /* Layout Containers */
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            max-width: 1600px;
+            flex: 1;
+            min-height: 0;
+            gap: 20px;
+            justify-content: center;
+            padding-bottom: 10px;
+        }
+
+        #left-panel {
+            flex: 0 0 640px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            position: relative;
+        }
+
+        #right-panel {
+            flex: 1;
+            min-width: 400px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Left Panel Components */
         #video-container {
             position: relative;
-            width: 85%;
-            /* Slightly wider */
-            max-width: 500px;
-            /* Larger max width */
-            aspect-ratio: 3/4;
-            /* Taller camera view */
+            width: 640px;
+            height: 480px;
             border: 4px solid #5e35b1;
             border-radius: 20px;
             overflow: hidden;
             background: #000;
-            box-shadow: 0 0 20px rgba(94, 53, 177, 0.5);
-            margin-bottom: 20px;
             flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(94, 53, 177, 0.6);
+            align-self: center;
         }
 
         .input_video {
@@ -66,8 +83,6 @@
             height: 100%;
             transform: scaleX(-1);
             opacity: 0.6;
-            object-fit: cover;
-            /* Fill container without stretching */
         }
 
         .output_canvas {
@@ -77,48 +92,74 @@
             width: 100%;
             height: 100%;
             transform: scaleX(-1);
-            object-fit: cover;
-            /* Match video fill */
         }
 
-        /* Game Panel (Right, 60%) */
-        #game-panel {
-            flex: 1;
+        #suggestion-box {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            min-width: 280px;
+            max-width: 80%;
+            background: rgba(15, 5, 25, 0.9);
+            border-radius: 18px;
+            border: 2px solid #b39ddb;
+            padding: 10px 25px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            position: relative;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            overflow-y: auto;
-            /* Allow scrolling if content is tall */
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
-        #maze-container {
-            position: relative;
-            background: rgba(40, 20, 60, 0.5);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 0 30px rgba(100, 50, 150, 0.3);
-            margin-top: 20px;
+        #suggestion-box.active {
+            background: rgba(81, 45, 168, 0.95);
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+            border-color: #fff;
+            transform: translateX(-50%) scale(1.02);
         }
 
-        #maze-canvas {
-            background: transparent;
+        .suggestion-icon {
+            font-size: 44px;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-desc {
+            font-size: 14px;
+            color: #d1c4e9;
+        }
+
+        .suggestion-placeholder {
+            color: #aaa;
+            font-style: italic;
+            font-size: 14px;
+            line-height: 1.4;
         }
 
         #stage-info {
+            height: 56px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 20px;
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
             color: #d1c4e9;
             text-shadow: 0 0 10px #7e57c2;
-            margin-bottom: 20px;
-            /* Space below title */
+            flex-shrink: 0;
         }
 
         .nav-btn {
@@ -141,153 +182,128 @@
             transform: scale(1.1);
         }
 
-
-
-        /* Suggestion Box */
-        #suggestion-box {
+        #maze-container {
+            flex: 1;
+            min-height: 0;
             position: relative;
-            /* Changed from absolute to flow below video */
-            margin-top: 20px;
-            background: rgba(94, 53, 177, 0.9);
-            padding: 20px 40px;
+            background: rgba(30, 20, 50, 0.7);
             border-radius: 20px;
-            text-align: center;
-            display: none;
-            box-shadow: 0 0 30px rgba(126, 87, 194, 0.8);
-            z-index: 100;
-            border: 3px solid #b39ddb;
-            cursor: pointer;
-            width: 80%;
-            left: auto;
-            top: auto;
-            transform: none;
+            padding: 15px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5e35b1;
         }
 
-        /* Suggestion Animation */
-        #suggestion-box.visible {
-            display: block;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        #maze-canvas {
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            aspect-ratio: 1 / 1;
         }
 
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        .code-area-wrapper {
+            height: 140px;
+            flex-shrink: 0;
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        #suggestion-icon {
-            font-size: 60px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        #suggestion-text {
-            font-size: 24px;
-            color: white;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        #suggestion-instruction {
-            font-size: 16px;
-            color: #b39ddb;
-            font-weight: normal;
-        }
-
-        /* Code Area */
         #code-area {
             width: 100%;
-            min-height: 150px;
-            /* Allow expansion */
-            height: auto;
+            height: 100%;
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #512da8;
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 10px;
-            padding-right: 100px;
-            /* Reserve space for Log Save button */
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
-            gap: 5px;
+            gap: 8px;
             box-sizing: border-box;
-            position: relative;
-            /* For button positioning */
+            overflow-y: auto;
         }
 
         .code-block {
             background: #5e35b1;
             color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 20px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            white-space: nowrap;
-            border: 1px solid #7e57c2;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .code-block:hover {
+            background: #ef5350;
+            transform: translateY(-2px);
         }
 
         .code-block.execute {
             background: #c2185b;
-            border-color: #e91e63;
-        }
-
-        /* Controls */
-        #controls-area {
-            margin-top: 20px;
-            display: flex;
-            width: 100%;
-            justify-content: flex-end;
-            /* Align button to right */
-        }
-
-        button.action-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            color: white;
-            font-weight: bold;
-            transition: all 0.2s;
-            background: linear-gradient(135deg, #512da8, #311b92);
-            box-shadow: 0 4px 0 #281766;
-        }
-
-        button.action-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        button.action-btn:hover {
-            filter: brightness(1.2);
-        }
-
-        #btn-delete {
-            background: linear-gradient(135deg, #d32f2f, #b71c1c);
-            box-shadow: 0 4px 0 #7f0000;
         }
 
         #btn-download {
-            background: linear-gradient(135deg, #388e3c, #1b5e20);
-            box-shadow: 0 4px 0 #0d330f;
             position: absolute;
-            top: 5px;
-            right: 5px;
-            padding: 5px 10px;
-            font-size: 12px;
-            z-index: 10;
+            bottom: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
-        /* Modal */
+        #btn-download:hover {
+            background: #218838;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        #console-log {
+            height: 160px;
+            width: 100%;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            font-family: 'Consolas', monospace;
+            padding: 8px;
+            border-radius: 10px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            font-size: 11px;
+        }
+
         #modal-overlay {
             position: fixed;
             top: 0;
@@ -303,598 +319,507 @@
 
         #modal-content {
             background: #2e1a47;
-            padding: 50px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             border: 4px solid #7e57c2;
             box-shadow: 0 0 50px rgba(126, 87, 194, 0.5);
         }
-
-        #modal-title {
-            font-size: 40px;
-            margin-bottom: 30px;
-        }
-
-        #modal-btn {
-            background: linear-gradient(135deg, #00acc1, #006064);
-            padding: 20px 40px;
-            font-size: 24px;
-            border: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #00363a;
-        }
-
-        #modal-btn:active {
-            transform: translateY(6px);
-            box-shadow: none;
-        }
-
-        #console-log {
-            width: 100%;
-            height: 200px;
-            /* Reduced height as requested */
-            background: rgba(0, 0, 0, 0.8);
-            color: #0f0;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 14px;
-            padding: 15px;
-            border-radius: 10px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            margin-top: 15px;
-            box-sizing: border-box;
-            line-height: 1.4;
-        }
     </style>
 </head>
 
 <body>
+    <h1>모션 코딩: 미로 탈출</h1>
 
-    <div id="container">
-        <!-- Game Panel -->
-        <div id="game-panel">
-            <div id="stage-info">
-                <button class="nav-btn" onclick="prevStage()">&#10094;</button>
-                <span id="stage-text">Stage 1 / 15</span>
-                <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
-            </div>
-
-            <div id="maze-container">
-                <canvas id="maze-canvas" width="480" height="480"></canvas>
-            </div>
-
-            <div id="code-area">
-                <button id="btn-download" class="action-btn"
-                    onclick="state.logs.length > 0 ? downloadLogs() : alert('로그가 없습니다.')">로그 저장</button>
-            </div>
-
-            <!-- Log Container under code area -->
-            <div id="console-log"></div>
-        </div>
-
-        <!-- Camera Section -->
-        <div id="camera-panel">
+    <div id="main-layout">
+        <div id="left-panel">
             <div id="video-container">
                 <video id="input-video" class="input_video"></video>
-                <canvas class="output_canvas" width="320" height="240"></canvas>
-            </div>
-
-            <div id="suggestion-box">
-                <div id="suggestion-icon"></div>
-                <div id="suggestion-text"></div>
-                <div id="suggestion-instruction"></div>
-                <div style="font-size: 12px; margin-top: 5px; color: #bbb;">(화면 터치하여 추가)</div>
-            </div>
-
-            <div id="modal-overlay">
-                <div id="modal-content">
-                    <div id="modal-title">스테이지 클리어!</div>
-                    <button id="modal-btn" onclick="nextStage()">다음 스테이지로</button>
+                <canvas class="output_canvas" width="640" height="480"></canvas>
+                <div id="suggestion-box">
+                    <div id="suggestion-content" style="display: none;">
+                        <div id="suggestion-icon" class="suggestion-icon"></div>
+                        <div id="suggestion-text" class="suggestion-name"></div>
+                        <div id="suggestion-instruction" class="suggestion-desc"></div>
+                    </div>
+                    <div id="suggestion-placeholder" class="suggestion-placeholder">
+                        <span style="font-size: 30px; display: block; margin-bottom: 5px;">👋</span>
+                        카메라 앞에서 동작을 취해보세요.
+                    </div>
                 </div>
             </div>
+        </div>
+        <div id="right-panel">
+            <div id="stage-info">
+                <button class="nav-btn" onclick="prevStage()">&#10094;</button>
+                <span id="stage-text">Stage 1 / 20</span>
+                <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
+            </div>
+            <div id="maze-container">
+                <canvas id="maze-canvas" width="360" height="360"></canvas>
+                <button id="btn-download" class="action-btn">로그 저장</button>
+            </div>
+            <div class="code-area-wrapper">
+                <div id="code-area"></div>
+            </div>
+            <div id="console-log"></div>
+        </div>
+    </div>
 
-            <script type="module">
-                const videoElement = document.getElementsByClassName('input_video')[0];
-                const canvasElement = document.getElementsByClassName('output_canvas')[0];
-                const canvasCtx = canvasElement.getContext('2d');
-                const suggestionBox = document.getElementById('suggestion-box');
-                const suggestionIcon_El = document.getElementById('suggestion-icon');
-                const suggestionText = document.getElementById('suggestion-text');
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <div id="modal-title" style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: #ffd700;">스테이지
+                클리어!</div>
+            <button id="modal-btn" onclick="nextStage()"
+                style="padding: 15px 40px; font-size: 24px; background: #00acc1; color: white; border: none; border-radius: 10px; cursor: pointer;">다음
+                스테이지로</button>
+        </div>
+    </div>
 
-                // --- Global State ---
-                const state = {
-                    participantId: null,
-                    sessionId: crypto.randomUUID(),
-                    stageId: 1,
-                    attemptId: 0,
-                    logs: [],
-                    codeBlocks: [],
-                    isExecuting: false,
-                    currentMotion: null,
-                    suggestedBlock: null,
-                    lastMotionTime: 0
-                };
+    <script type="module">
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const canvasCtx = canvasElement.getContext('2d');
+        const suggestionBox = document.getElementById('suggestion-box');
+        const suggestionContent = document.getElementById('suggestion-content');
+        const suggestionPlaceholder = document.getElementById('suggestion-placeholder');
+        const suggestionIcon_El = document.getElementById('suggestion-icon');
+        const suggestionText = document.getElementById('suggestion-text');
+        const suggestionInst = document.getElementById('suggestion-instruction');
 
-                // --- Logger ---
-                function initLogger() {
-                    let pid = localStorage.getItem('participant_id');
-                    if (!pid) {
-                        pid = crypto.randomUUID();
-                        localStorage.setItem('participant_id', pid);
-                    }
-                    state.participantId = pid;
-                    logEvent('session_start');
-                }
+        const state = { participantId: null, sessionId: crypto.randomUUID(), stageId: 1, attemptId: 0, logs: [], codeBlocks: [], isExecuting: false, currentMotion: null, suggestedBlock: null, lastMotionTime: 0 };
 
-                function logEvent(type, data = {}) {
-                    const now = new Date();
-                    const y = now.getFullYear();
-                    const m = String(now.getMonth() + 1).padStart(2, '0');
-                    const d = String(now.getDate()).padStart(2, '0');
-                    const h = String(now.getHours()).padStart(2, '0');
-                    const min = String(now.getMinutes()).padStart(2, '0');
-                    const s = String(now.getSeconds()).padStart(2, '0');
-                    const ms = String(now.getMilliseconds()).padStart(3, '0');
-                    const timestamp = `${y}-${m}-${d} ${h}:${min}:${s}.${ms}`;
+        function initLogger() {
+            let pid = localStorage.getItem('participant_id') || crypto.randomUUID();
+            localStorage.setItem('participant_id', pid);
+            state.participantId = pid;
+            logEvent('session_start');
+        }
 
-                    const entry = {
-                        participant_id: state.participantId,
-                        session_id: state.sessionId,
-                        stage_id: state.stageId,
-                        attempt_id: state.attemptId,
-                        timestamp: timestamp,
-                        event_type: type,
-                        ...data
-                    };
-                    state.logs.push(entry);
-                    console.log(`[LOG] ${type}`, data);
+        function logEvent(type, data = {}) {
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(now.getMilliseconds()).padStart(3, '0')}`;
+            const entry = { participant_id: state.participantId, session_id: state.sessionId, stage_id: state.stageId, attempt_id: state.attemptId, timestamp: timestamp, event_type: type, ...data };
+            state.logs.push(entry);
+            const logDiv = document.getElementById('console-log');
+            const logLine = document.createElement('div');
+            logLine.innerText = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}] ${type}: ${JSON.stringify(data)}`;
+            logDiv.appendChild(logLine);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
 
-                    // On-screen log
-                    const logDiv = document.getElementById('console-log');
-                    const logLine = document.createElement('div');
-                    logLine.innerText = `[${h}:${min}:${s}] ${type}: ${JSON.stringify(data)}`;
-                    logDiv.appendChild(logLine);
-                    logDiv.scrollTop = logDiv.scrollHeight;
-                }
+        window.downloadLogs = () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
+            dl.click();
+        }
 
-                window.downloadLogs = () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
-                    const downloadAnchorNode = document.createElement('a');
-                    downloadAnchorNode.setAttribute("href", dataStr);
-                    downloadAnchorNode.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
-                    document.body.appendChild(downloadAnchorNode);
-                    downloadAnchorNode.click();
-                    downloadAnchorNode.remove();
-                }
+        const mazeCanvas = document.getElementById('maze-canvas');
+        const ctx = mazeCanvas.getContext('2d');
+        const GRID_SIZE = 6;
+        const TILE_SIZE = mazeCanvas.width / GRID_SIZE;
 
-                // --- Maze Game Logic ---
-                const TILE_SIZE = 60; // 8x8 grid in 480x480
-                const GRID_SIZE = 8;
+        const STAGES = {
+            // 1~2: 전진 3칸
+            1: {
+                grid: [
+                    [0, 2, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 3, dir: 0 }
+            },
+            2: {
+                // 전진 3칸(가로): 오른쪽으로 3칸 이동
+                // start (1,2) → (2,2) → (3,2) → goal (4,2)
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 2, dir: 1 } // 오른쪽 보고 시작
+            },
+            // 3~4: 전진 4칸
+            3: {
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 2, y: 4, dir: 0 }
+            },
+            4: {
+                // 전진 4칸(가로): 오른쪽으로 4칸 이동
+                // start (0,3) → (1,3) → (2,3) → (3,3) → goal (4,3)
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 3, dir: 1 } // 오른쪽 보고 시작
+            },
+            // 5~6: L자
+            5: {
+                // L자(회전 1번): 위로 2칸 → 오른쪽 회전 → 오른쪽으로 2칸 → 목표
+                // 예) ⬆️⬆️ ↪️ ⬆️⬆️  (회전은 1번만)
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 2, 0, 0], // goal at (3,1)
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0], // start at (1,3)
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 3, dir: 0 } // 위를 보고 시작
+            },
+            6: {
+                // L자(회전 1번): 위로 2칸 → 왼쪽 회전 → 왼쪽으로 2칸 → 목표
+                // 예) ⬆️⬆️ ↩️ ⬆️⬆️  (회전은 1번만)
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 2, 1, 1, 0, 0], // goal at (1,1)
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0], // start at (3,3)
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 3, y: 3, dir: 0 } // 위를 보고 시작
+            },
+            // 7~8: 계단식
+            7: {
+                // 계단식(회전 2번): 위로 2칸 → (우회전) 오른쪽 2칸 → (좌회전) 위로 2칸 → 목표
+                // 권장 해법 예: ⬆️⬆️ ↪️ ⬆️⬆️ ↩️ ⬆️⬆️
+                grid: [
+                    [0, 0, 0, 2, 0, 0], // y=0 (goal at x=3)
+                    [0, 0, 0, 1, 0, 0], // y=1
+                    [0, 1, 1, 1, 0, 0], // y=2
+                    [0, 1, 0, 0, 0, 0], // y=3
+                    [0, 1, 0, 0, 0, 0], // y=4 (start at x=1)
+                    [0, 0, 0, 0, 0, 0], // y=5
+                ],
+                start: { x: 1, y: 4, dir: 0 } // 위를 보고 시작
+            },
+            8: {
+                // 계단식(회전 2번) 좌우 반대 버전: 위로 2칸 → (좌회전) 왼쪽 2칸 → (우회전) 위로 2칸 → 목표
+                // 권장 해법 예: ⬆️⬆️ ↩️ ⬆️⬆️ ↪️ ⬆️⬆️
+                grid: [
+                    [0, 0, 2, 0, 0, 0], // y=0 (goal at x=2)
+                    [0, 0, 1, 0, 0, 0], // y=1
+                    [0, 0, 1, 1, 1, 0], // y=2
+                    [0, 0, 0, 0, 1, 0], // y=3
+                    [0, 0, 0, 0, 1, 0], // y=4 (start at x=4)
+                    [0, 0, 0, 0, 0, 0], // y=5
+                ],
+                start: { x: 4, y: 4, dir: 0 } // 위를 보고 시작
+            },
+            // 9~10: 시점 변환
+            9: {
+                // Stage 7과 동일한 미로 + 시점 변환(오른쪽 보고 시작)
+                grid: [
+                    [0, 0, 0, 2, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 4, dir: 1 } // ✅ 오른쪽
+            },
+            10: {
+                // Stage 8과 동일한 미로 + 시점 변환(왼쪽 보고 시작)
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 4, y: 4, dir: 3 } // ✅ 왼쪽
+            },
+            // 11~12: 반전
+            11: {
+                // Stage 7과 동일한 미로
+                // 하지만 왼쪽을 보고 시작 → 좌우 회전 판단이 헷갈림
+                grid: [
+                    [0, 0, 0, 2, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 4, dir: 3 } // ✅ 왼쪽
+            },
+            12: {
+                // Stage 8과 동일한 미로
+                // 오른쪽을 보고 시작 → 좌우 판단 혼란
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 4, y: 4, dir: 1 } // ✅ 오른쪽
+            },
+            // 13: U턴
+            13: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 1, 0, 0],
+                    [0, 1, 0, 1, 0, 0],
+                    [0, 1, 0, 2, 0, 0],
+                ],
+                start: { x: 1, y: 5, dir: 0 }
+            },
+            // 14~15: 장거리
+            14: {
+                // 장거리 ㄱ자 (세로 길게 + 가로 짧게): 위로 5칸 → 오른쪽 2칸 → 목표
+                grid: [
+                    [0, 1, 1, 2, 0, 0], // goal (3,0)
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0], // start (1,5)
+                ],
+                start: { x: 1, y: 5, dir: 0 }
+            },
+            15: {
+                // 장거리 ㄱ자 (세로 짧게 + 가로 길게): 위로 2칸 → 오른쪽 4칸 → 목표
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 2], // goal (5,3)
+                    [1, 0, 0, 0, 0, 0], // start (0,4)
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 4, dir: 0 }
+            },
+            // 16~17: 복합
+            16: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [2, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [1, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 4, dir: 0 }
+            },
+            17: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 1, 1, 1, 1, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 1, 2, 0, 0],
+                ],
+                start: { x: 1, y: 1, dir: 1 }
+            },
+            // 18~19: 나선
+            18: {
+                grid: [
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 2, 0, 1],
+                    [1, 1, 1, 1, 0, 1],
+                    [0, 0, 0, 0, 0, 1],
+                    [0, 1, 1, 1, 1, 1],
+                ],
+                start: { x: 1, y: 5, dir: 1 }
+            },
+            19: {
+                grid: [
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 0],
+                    [1, 0, 2, 1, 0, 0],
+                    [1, 0, 1, 1, 0, 0],
+                    [1, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 5, y: 0, dir: 3 }
+            },
+            // 20: Final Boss
+            20: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [1, 1, 1, 0, 1, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 2, dir: 1 }
+            }
+        };
 
-                // 20 Stages with Cognitive Progression (8x8 Grid)
-                // Directions: 0:Up, 1:Right, 2:Down, 3:Left
-                const STAGES = {
-                    // Stage 1: Simple Forward (Up)
-                    1: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 0 } },
-                    // Stage 2: Simple Forward (Right)
-                    2: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 2, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 2, y: 3, dir: 1 } },
+        let player = { x: 0, y: 0, dir: 0 };
+        const catSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80"><ellipse cx="50" cy="60" rx="30" ry="35" fill="#e67e22" stroke="#d35400" stroke-width="3"/><circle cx="50" cy="35" r="25" fill="#e67e22" stroke="#d35400" stroke-width="3"/><polygon points="30,25 20,5 45,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/><polygon points="70,25 80,5 55,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/><circle cx="40" cy="30" r="3" fill="black"/><circle cx="60" cy="30" r="3" fill="black"/><polygon points="47,38 53,38 50,42" fill="pink"/><line x1="30" y1="40" x2="10" y2="38" stroke="black" stroke-width="2"/><line x1="30" y1="42" x2="10" y2="44" stroke="black" stroke-width="2"/><line x1="70" y1="40" x2="90" y2="38" stroke="black" stroke-width="2"/><line x1="70" y1="42" x2="90" y2="44" stroke="black" stroke-width="2"/><path d="M50,95 Q30,90 30,70" fill="none" stroke="#d35400" stroke-width="5" stroke-linecap="round"/></svg>`;
+        const catImage = new Image();
+        catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
 
-                    // Stage 3: Long Forward (Up)
-                    3: { grid: [[0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 5, dir: 0 } },
-                    // Stage 4: Long Forward (Left)
-                    4: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 2, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 6, y: 2, dir: 3 } },
+        function initStage(id) {
+            state.stageId = Math.max(1, Math.min(id, 20));
+            document.getElementById('stage-text').innerText = `Stage ${state.stageId} / 20`;
+            resetPlayer();
+            if (catImage.complete) drawMaze(); else catImage.onload = drawMaze;
+        }
 
-                    // Stage 5: L-Shape (Right Turn: Up -> Right)
-                    5: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 5, dir: 0 } },
-                    // Stage 6: L-Shape (Left Turn: Up -> Left)
-                    6: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 0, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 5, dir: 0 } },
+        function resetPlayer() {
+            player = { ...STAGES[state.stageId].start };
+            drawMaze();
+        }
 
-                    // Stage 7: Staircase (R-L-R: Up -> Right -> Up -> Left) -- Simplified to Up-Right-Up
-                    7: { grid: [[0, 0, 0, 0, 0, 2, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 4, dir: 0 } },
-                    // Stage 8: Staircase (L-R-L)
-                    8: { grid: [[0, 2, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 4, dir: 0 } },
-
-                    // Stage 9: Side Start (Facing Right, Path goes Up - requires Left Turn first?)
-                    // "Mental Rotation": Player is Right, needs to go Up.
-                    9: { grid: [[0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 3, dir: 1 } },
-                    // Stage 10: Side Start (Facing Left, Path goes Up)
-                    10: { grid: [[0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 3, dir: 3 } },
-
-                    // Stage 11: Reverse Start (Facing Down, Path goes Down) - "Forward" moves screen-down
-                    11: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 1, dir: 2 } },
-                    // Stage 12: Reverse Staircase (Facing Down)
-                    12: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 1, dir: 2 } },
-
-                    // Stage 13: U-Turn
-                    13: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 2, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 0 } },
-
-                    // Stage 14: Long Sequence
-                    14: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 0, 0, 0, 0, 2, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 5, dir: 0 } },
-                    // Stage 15: Long Winding
-                    15: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 2, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 1, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 6, y: 5, dir: 3 } },
-
-                    // Stage 16: U-Shape Container
-                    16: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 1, 2], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 1, dir: 2 } },
-                    // Stage 17: Z-Shape Zig Zag
-                    17: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 2, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 1, dir: 1 } },
-
-                    // Stage 18: Inward Spiral
-                    18: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 0, 1, 2, 0, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 5, dir: 0 } },
-                    // Stage 19: Tight Vortex
-                    19: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 0, 1, 2, 0, 1, 0], [0, 1, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 6, y: 6, dir: 3 } },
-
-                    // Stage 20: Final Boss
-                    20: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 1, 2], [0, 1, 0, 1, 0, 0, 1, 0], [0, 1, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 6, dir: 0 } } // Start bottom-left, Facing Up
-                };
-                let player = { x: 0, y: 0, dir: 1 };
-
-                const mazeCanvas = document.getElementById('maze-canvas');
-                const ctx = mazeCanvas.getContext('2d');
-
-                function initStage(id) {
-                    if (id < 1) id = 1;
-                    if (id > 20) id = 20;
-                    state.stageId = id;
-                    document.getElementById('stage-text').innerText = `Stage ${id} / 20`;
-                    resetPlayer();
-                    // Wait for cat image to load if needed, but here we just draw
-                    if (catImage.complete) drawMaze();
-                    else catImage.onload = drawMaze;
-                }
-
-                function resetPlayer() {
-                    const config = STAGES[state.stageId];
-                    player = { ...config.start };
-                    drawMaze();
-                }
-
-                const catSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
-          <ellipse cx="50" cy="60" rx="30" ry="35" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
-          <circle cx="50" cy="35" r="25" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
-          <polygon points="30,25 20,5 45,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
-          <polygon points="70,25 80,5 55,20" fill="#e67e22" stroke="#d35400" stroke-width="3"/>
-          <circle cx="40" cy="30" r="3" fill="black"/>
-          <circle cx="60" cy="30" r="3" fill="black"/>
-          <polygon points="47,38 53,38 50,42" fill="pink"/>
-          <line x1="30" y1="40" x2="10" y2="38" stroke="black" stroke-width="2"/>
-          <line x1="30" y1="42" x2="10" y2="44" stroke="black" stroke-width="2"/>
-          <line x1="70" y1="40" x2="90" y2="38" stroke="black" stroke-width="2"/>
-          <line x1="70" y1="42" x2="90" y2="44" stroke="black" stroke-width="2"/>
-          <path d="M50,95 Q30,90 30,70" fill="none" stroke="#d35400" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-        `.trim();
-                const catImage = new Image();
-                catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
-
-                function drawMaze() {
-                    ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-                    const grid = STAGES[state.stageId].grid;
-
-                    for (let y = 0; y < GRID_SIZE; y++) {
-                        for (let x = 0; x < GRID_SIZE; x++) {
-                            const cell = grid[y][x];
-                            const px = x * TILE_SIZE;
-                            const py = y * TILE_SIZE;
-
-                            // Rounded Rect function
-                            function roundRect(x, y, w, h, radius, fill) {
-                                ctx.beginPath();
-                                ctx.moveTo(x + radius, y);
-                                ctx.lineTo(x + w - radius, y);
-                                ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-                                ctx.lineTo(x + w, y + h - radius);
-                                ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-                                ctx.lineTo(x + radius, y + h);
-                                ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-                                ctx.lineTo(x, y + radius);
-                                ctx.quadraticCurveTo(x, y, x + radius, y);
-                                ctx.closePath();
-                                ctx.fillStyle = fill;
-                                ctx.fill();
-                            }
-
-                            if (cell === 1) {
-                                // Path Tile: Light Purple
-                                roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#7e57c2');
-                                // Add a little sheen/star icon?
-                                ctx.fillStyle = "rgba(255,255,255,0.2)";
-                                ctx.beginPath();
-                                ctx.arc(px + 20, py + 20, 3, 0, Math.PI * 2);
-                                ctx.fill();
-                            } else if (cell === 2) {
-                                // Goal Tile: Pink/Red
-                                roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#ec407a');
-                                // Planet/Ring pattern
-                                ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                                ctx.lineWidth = 3;
-                                ctx.beginPath();
-                                ctx.ellipse(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 20, 8, Math.PI / 4, 0, Math.PI * 2);
-                                ctx.stroke();
-                            }
+        function drawMaze() {
+            ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+            const grid = STAGES[state.stageId].grid;
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = grid[y][x];
+                    const px = x * TILE_SIZE, py = y * TILE_SIZE;
+                    if (cell === 1 || cell === 2) {
+                        ctx.beginPath();
+                        ctx.roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 10);
+                        ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
+                        ctx.fill();
+                        if (cell === 1) {
+                            ctx.fillStyle = "rgba(255,255,255,0.2)";
+                            ctx.beginPath(); ctx.arc(px + 15, py + 15, 3, 0, Math.PI * 2); ctx.fill();
                         }
                     }
-
-                    // Draw Player
-                    const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
-                    const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
-                    ctx.save();
-                    ctx.translate(cx, cy);
-                    ctx.rotate(player.dir * 90 * Math.PI / 180);
-                    const size = TILE_SIZE * 0.8;
-                    ctx.drawImage(catImage, -size / 2, -size / 2, size, size);
-                    ctx.restore();
                 }
+            }
+            const cx = player.x * TILE_SIZE + TILE_SIZE / 2, cy = player.y * TILE_SIZE + TILE_SIZE / 2;
+            ctx.save(); ctx.translate(cx, cy); ctx.rotate(player.dir * 90 * Math.PI / 180);
+            ctx.drawImage(catImage, -TILE_SIZE * 0.4, -TILE_SIZE * 0.4, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
+            ctx.restore();
+        }
 
-                async function executeCode() {
-                    if (state.isExecuting) return;
-                    state.isExecuting = true;
-                    state.attemptId++;
-                    logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
+        async function executeCode() {
+            if (state.isExecuting) return;
+            state.isExecuting = true; state.attemptId++;
+            logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
+            resetPlayer(); await new Promise(r => setTimeout(r, 500));
+            for (const block of state.codeBlocks) {
+                await new Promise(r => setTimeout(r, 600));
+                if (block.type === 'move_forward') {
+                    const dx = [0, 1, 0, -1], dy = [-1, 0, 1, 0];
+                    const nx = player.x + dx[player.dir], ny = player.y + dy[player.dir];
+                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && STAGES[state.stageId].grid[ny][nx] !== 0) {
+                        player.x = nx; player.y = ny; logEvent('action_move_success', { x: nx, y: ny });
+                    } else logEvent('action_move_fail', { x: nx, y: ny });
+                } else if (block.type === 'turn_left') player.dir = (player.dir + 3) % 4;
+                else if (block.type === 'turn_right') player.dir = (player.dir + 1) % 4;
+                drawMaze();
+            }
+            if (STAGES[state.stageId].grid[player.y][player.x] === 2) {
+                logEvent('execution_success'); setTimeout(() => showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700"), 500);
+            } else {
+                logEvent('execution_fail'); setTimeout(() => showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444"), 500);
+                state.isExecuting = false;
+            }
+        }
 
-                    resetPlayer();
-                    await new Promise(r => setTimeout(r, 500));
+        function showModal(title, btnText, action, color) {
+            const overlay = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-title').style.color = color;
+            document.getElementById('modal-btn').innerText = btnText;
+            document.getElementById('modal-btn').setAttribute('onclick', action);
+            overlay.style.display = 'flex';
+        }
 
-                    for (const block of state.codeBlocks) {
-                        await new Promise(r => setTimeout(r, 800));
+        window.retryStage = () => { document.getElementById('modal-overlay').style.display = 'none'; state.isExecuting = false; resetPlayer(); };
+        window.nextStage = () => {
+            document.getElementById('modal-overlay').style.display = 'none'; state.isExecuting = false; state.codeBlocks = []; updateCodeUI();
+            if (state.stageId < 20) initStage(state.stageId + 1); else { alert("축하합니다!"); logEvent('session_end'); }
+        };
+        window.prevStage = () => initStage(state.stageId - 1);
+        window.nextStageDev = () => initStage(state.stageId + 1);
 
-                        if (block.type === 'move_forward') {
-                            const dx = [0, 1, 0, -1];
-                            const dy = [-1, 0, 1, 0];
-                            const nx = player.x + dx[player.dir];
-                            const ny = player.y + dy[player.dir];
+        function updateCodeUI() {
+            const area = document.getElementById('code-area'); area.innerHTML = '';
+            state.codeBlocks.forEach((block, index) => {
+                const el = document.createElement('div'); el.className = `code-block ${block.type}`;
+                el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(index, 1); updateCodeUI(); } };
+                area.appendChild(el);
+            });
+        }
 
-                            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE &&
-                                STAGES[state.stageId].grid[ny][nx] !== 0) {
-                                player.x = nx;
-                                player.y = ny;
-                                logEvent('action_move_success', { x: nx, y: ny });
-                            } else {
-                                logEvent('action_move_fail', { x: nx, y: ny });
-                            }
-                        } else if (block.type === 'turn_left') {
-                            player.dir = (player.dir + 3) % 4;
-                        } else if (block.type === 'turn_right') {
-                            player.dir = (player.dir + 1) % 4;
-                        }
+        function setSuggestion(type, name, icon, instruction, confidence = null) {
+            if (state.currentMotion === type) return;
+            state.currentMotion = type;
+            if (type) {
+                state.suggestedBlock = { type, name, icon, confidence };
+                suggestionBox.classList.add('active');
+                suggestionPlaceholder.style.display = 'none'; suggestionContent.style.display = 'block';
+                suggestionText.innerText = name; suggestionIcon_El.innerText = icon; suggestionInst.innerText = instruction;
+                logEvent('motion_detected', { type, confidence });
+            } else {
+                state.suggestedBlock = null; suggestionBox.classList.remove('active');
+                suggestionContent.style.display = 'none'; suggestionPlaceholder.style.display = 'block';
+            }
+        }
 
-                        drawMaze();
-                    }
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.code-block')) return;
+            if (state.suggestedBlock && !state.isExecuting) {
+                const { type, name, icon } = state.suggestedBlock;
+                if (type === 'execute') executeCode();
+                else { state.codeBlocks.push({ type, name, icon }); updateCodeUI(); logEvent('block_confirmed', { type }); }
+            }
+        });
 
-                    const grid = STAGES[state.stageId].grid;
-                    if (grid[player.y][player.x] === 2) {
-                        logEvent('execution_success');
-                        setTimeout(() => {
-                            showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700");
-                        }, 500);
-                    } else {
-                        logEvent('execution_fail');
-                        setTimeout(() => {
-                            showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444");
-                        }, 500);
-                        state.isExecuting = false;
-                    }
-                }
+        function onResults(results) {
+            if (!results.poseLandmarks) return;
+            canvasCtx.save(); canvasCtx.clearRect(0, 0, 640, 480); canvasCtx.drawImage(results.image, 0, 0, 640, 480);
+            if (results.poseLandmarks) {
+                drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 });
+                drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
+            }
+            canvasCtx.restore();
+            const lm = results.poseLandmarks, now = Date.now();
+            if (now - state.lastMotionTime < 600) return;
+            const nose = lm[0], ls = lm[11], rs = lm[12], lw = lm[15], rw = lm[16];
+            let detected = null, confidence = 0;
+            const getVis = (...l) => l.reduce((a, v) => a + (v.visibility || 0), 0) / l.length;
+            if (lw.y < nose.y && rw.y < nose.y) detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙌 두 손을 위로' };
+            else if (Math.abs(lw.x - nose.x) < 0.15 && Math.abs(lw.y - nose.y) < 0.15 && Math.abs(rw.x - nose.x) < 0.15 && Math.abs(rw.y - nose.y) < 0.15) detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙆 머리에 손을 올리세요' };
+            else if (Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
+            else if (Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
+            if (detected) { setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, getVis(lw, rw, nose)); state.lastMotionTime = now; }
+        }
 
-                function showModal(title, btnText, action, color) {
-                    const overlay = document.getElementById('modal-overlay');
-                    const titleEl = document.getElementById('modal-title');
-                    const btnEl = document.getElementById('modal-btn');
-                    titleEl.innerText = title;
-                    titleEl.style.color = color;
-                    btnEl.innerText = btnText;
-                    btnEl.setAttribute('onclick', action);
-                    overlay.style.display = 'flex';
-                }
-
-                window.retryStage = () => {
-                    document.getElementById('modal-overlay').style.display = 'none';
-                    state.isExecuting = false;
-                    resetPlayer();
-                };
-
-                window.nextStage = () => {
-                    document.getElementById('modal-overlay').style.display = 'none';
-                    state.isExecuting = false;
-                    state.codeBlocks = [];
-                    updateCodeUI();
-                    if (state.stageId < 20) {
-                        initStage(state.stageId + 1);
-                    } else {
-                        alert("모든 스테이지를 클리어했습니다! 축하합니다!");
-                        logEvent('session_end');
-                    }
-                };
-
-                // --- Interaction Logic ---
-                function updateCodeUI() {
-                    const area = document.getElementById('code-area');
-                    area.innerHTML = '';
-                    state.codeBlocks.forEach((block, index) => {
-                        const el = document.createElement('div');
-                        el.className = `code-block ${block.type}`;
-                        el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                        el.title = "클릭하여 삭제";
-                        el.onclick = () => removeBlockAtIndex(index);
-                        area.appendChild(el);
-                    });
-                }
-
-                function addBlock(type, name, icon, confidence = null) {
-                    if (state.isExecuting) return;
-                    state.codeBlocks.push({ type, name, icon });
-
-                    const logData = { type, name };
-                    if (confidence !== null) {
-                        logData.motion_confidence = confidence;
-                    }
-                    logEvent('block_confirmed', logData);
-                    updateCodeUI();
-                }
-
-                function removeBlockAtIndex(index) {
-                    if (state.isExecuting) return;
-                    const removed = state.codeBlocks.splice(index, 1)[0];
-                    logEvent('block_deleted', { removed, index });
-                    updateCodeUI();
-                }
-
-                function removeLastBlock() {
-                    if (state.isExecuting || state.codeBlocks.length === 0) return;
-                    const index = state.codeBlocks.length - 1;
-                    const removed = state.codeBlocks.splice(index, 1)[0];
-                    logEvent('block_deleted', { removed, index });
-                    updateCodeUI();
-                }
-
-                document.getElementById('btn-download').onclick = downloadLogs;
-
-                // Dev Navigation
-                window.prevStage = () => {
-                    initStage(state.stageId - 1);
-                };
-
-                window.nextStageDev = () => {
-                    initStage(state.stageId + 1);
-                };
-
-                // --- Pose Recognition & Handlers ---
-                // (Similar to previous, but ensuring no redraw overlap or double declare)
-
-                function setSuggestion(type, name, icon, instruction, confidence = null) {
-                    if (state.currentMotion === type) return;
-                    state.currentMotion = type;
-
-                    if (type) {
-                        state.suggestedBlock = { type, name, icon, confidence };
-                        suggestionBox.classList.add('visible');
-                        suggestionText.innerText = name;
-                        suggestionIcon_El.innerText = icon;
-                        document.getElementById('suggestion-instruction').innerText = instruction;
-
-                        // Add click listener just for this state if needed, or rely on global
-                        const logData = { type };
-                        if (confidence !== null) logData.motion_confidence = confidence;
-                        logEvent('motion_detected', logData);
-                    } else {
-                        state.suggestedBlock = null;
-                        suggestionBox.classList.remove('visible');
-                    }
-                }
-
-                // Global click for suggestion (Click Anywhere)
-                document.body.addEventListener('click', (e) => {
-                    // Ignore clicks on buttons
-                    if (e.target.closest('button')) return;
-
-                    if (state.suggestedBlock && !state.isExecuting) {
-                        const { type, name, icon, confidence } = state.suggestedBlock;
-                        if (type === 'execute') {
-                            executeCode();
-                        } else {
-                            addBlock(type, name, icon, confidence);
-                            // Visual feedback for adding
-                            suggestionBox.style.transform = "scale(1.1)";
-                            setTimeout(() => suggestionBox.style.transform = "scale(1)", 100);
-                        }
-                    }
-                });
-
-                // Pose Results
-                function onResults(results) {
-                    if (!results.poseLandmarks) return;
-
-                    // Draw skeleton on hidden canvas (or visible debug one)
-                    canvasCtx.save();
-                    canvasCtx.clearRect(0, 0, 320, 240);
-                    canvasCtx.drawImage(results.image, 0, 0, 320, 240);
-
-                    if (results.poseLandmarks) {
-                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-                            { color: '#00FF00', lineWidth: 4 });
-                        drawLandmarks(canvasCtx, results.poseLandmarks,
-                            { color: '#FF0000', lineWidth: 2 });
-                    }
-                    canvasCtx.restore();
-
-                    const lm = results.poseLandmarks;
-                    const now = Date.now();
-                    if (now - state.lastMotionTime < 500) return;
-
-                    const nose = lm[0];
-                    const leftShoe = lm[11]; // shoulder
-                    const rightShoe = lm[12];
-                    const leftWrist = lm[15];
-                    const rightWrist = lm[16];
-
-                    let detected = null;
-                    let confidence = 0;
-                    const armLevelThresh = 0.15;
-
-                    function getAvgVisibility(...landmarks) {
-                        const sum = landmarks.reduce((acc, l) => acc + (l.visibility || 0), 0);
-                        return sum / landmarks.length;
-                    }
-
-                    // 1. Hands Up
-                    if (leftWrist.y < nose.y && rightWrist.y < nose.y) {
-                        detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙌 두 손을 위로' };
-                        confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-                    }
-                    // 2. Head Touch
-                    else if (Math.abs(leftWrist.x - nose.x) < 0.15 && Math.abs(leftWrist.y - nose.y) < 0.15 &&
-                        Math.abs(rightWrist.x - nose.x) < 0.15 && Math.abs(rightWrist.y - nose.y) < 0.15) {
-                        detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙆 머리에 손을 올리세요' };
-                        confidence = getAvgVisibility(leftWrist, rightWrist, nose);
-                    }
-                    // 3. Right
-                    else if (Math.abs(rightWrist.y - rightShoe.y) < armLevelThresh && rightWrist.x < rightShoe.x - 0.2) {
-                        detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
-                        confidence = getAvgVisibility(rightWrist, rightShoe);
-                    }
-                    // 4. Left
-                    else if (Math.abs(leftWrist.y - leftShoe.y) < armLevelThresh && leftWrist.x > leftShoe.x + 0.2) {
-                        detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
-                        confidence = getAvgVisibility(leftWrist, leftShoe);
-                    }
-
-                    if (detected) {
-                        confidence = Math.round(confidence * 100) / 100;
-                        setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, confidence);
-                    } else {
-                        setSuggestion(null);
-                    }
-                }
-
-                // Init
-                initLogger();
-                initStage(1);
-
-                const pose = new Pose({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-                });
-                pose.setOptions({
-                    modelComplexity: 1,
-                    smoothLandmarks: true,
-                    enableSegmentation: false,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5
-                });
-                pose.onResults(onResults);
-
-                const camera = new Camera(videoElement, {
-                    onFrame: async () => {
-                        await pose.send({ image: videoElement });
-                    },
-                    width: 640, /* Higher resolution for better quality */
-                    height: 480
-                });
-                camera.start();
-
-            </script>
+        initLogger(); initStage(1);
+        const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+        pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        pose.onResults(onResults);
+        const camera = new Camera(videoElement, { onFrame: async () => { await pose.send({ image: videoElement }); }, width: 640, height: 480 });
+        camera.start();
+    </script>
 </body>
 
 </html>
