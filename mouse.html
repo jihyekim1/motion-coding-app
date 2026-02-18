@@ -8,41 +8,138 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
+            padding: 5px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at center, #2e1a47, #1a0b2e);
+            background: radial-gradient(circle at center, #2e1a47 0%, #1a0b2e 100%);
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+            font-size: 1.5rem;
+            margin: 5px 0 10px 0;
             text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            flex-shrink: 0;
         }
 
-        #stage-info {
+        /* Layout Containers */
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            max-width: 1600px;
+            flex: 1;
+            min-height: 0;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding-bottom: 10px;
+        }
+
+        #left-panel {
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            gap: 15px;
+            margin-top: 56px;
+            /* 스테이지 정보 높이만큼 하단 이동 */
+        }
+
+        #right-panel {
+            flex: 1;
+            min-width: 400px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Palette styling */
+        #block-palette {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(30, 20, 50, 0.7);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid #5e35b1;
+        }
+
+        .palette-btn {
+            background: #5e35b1;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 15px;
             display: flex;
             align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #4527a0;
+        }
+
+        .palette-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+            box-shadow: 0 6px 0 #4527a0;
+        }
+
+        .palette-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #4527a0;
+        }
+
+        .palette-btn span {
+            font-size: 24px;
+        }
+
+        .palette-btn.execute {
+            background: #c2185b;
+            box-shadow: 0 4px 0 #880e4f;
+            margin-top: 5px;
+            justify-content: center;
+        }
+
+        .palette-btn.execute:hover {
+            box-shadow: 0 6px 0 #880e4f;
+        }
+
+        /* Right Panel Components (identical to index.html) */
+        #stage-info {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 20px;
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
             color: #d1c4e9;
             text-shadow: 0 0 10px #7e57c2;
-            margin-bottom: 20px;
+            flex-shrink: 0;
         }
 
         .nav-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid #7e57c2;
             color: #d1c4e9;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 24px;
+            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -54,108 +151,109 @@
             transform: scale(1.1);
         }
 
-        #maze-container {
+        #maze-outer {
+            flex: 1;
+            min-height: 0;
             position: relative;
-            background: rgba(40, 20, 60, 0.5);
+            background: rgba(30, 20, 50, 0.7);
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 0 30px rgba(100, 50, 150, 0.3);
-            margin-bottom: 20px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
+            border: 2px solid #5e35b1;
+            overflow: hidden;
         }
 
         #maze-canvas {
-            background: #fff;
-            border: 4px solid #fff;
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
-        /* Palette styling as before the redesign */
-        #block-palette {
-            width: 80%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .palette-btn {
-            background: #5e35b1;
-            border: 2px solid #7e57c2;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #4527a0;
-        }
-
-        .palette-btn:hover {
-            transform: translateY(2px);
-            filter: brightness(1.2);
-            box-shadow: 0 2px 0 #4527a0;
-        }
-
-        .palette-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        .palette-btn span {
-            font-size: 30px;
-        }
-
-        .palette-btn.execute {
-            background: #c2185b;
-            border-color: #e91e63;
-            box-shadow: 0 4px 0 #880e4f;
+        .code-area-wrapper {
+            height: 140px;
+            flex-shrink: 0;
+            position: relative;
+            width: 100%;
             margin-top: 10px;
-            justify-content: center;
         }
 
         #code-area {
-            width: 80%;
-            min-height: 120px;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #512da8;
             border-radius: 15px;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
         .code-block {
-            background: #0e639c;
+            background: #5e35b1;
             color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 20px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             cursor: pointer;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .code-block:hover {
+            background: #ef5350;
+            transform: translateY(-2px);
+        }
+
+        #btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+
+        #btn-download:hover {
+            background: #218838;
+            transform: scale(1.05);
         }
 
         #console-log {
-            width: 80%;
-            height: 200px;
+            height: 160px;
+            width: 100%;
+            flex-shrink: 0;
             background: rgba(0, 0, 0, 0.8);
             color: #0f0;
             font-family: 'Consolas', monospace;
-            padding: 15px;
+            padding: 8px;
             border-radius: 10px;
             overflow-y: auto;
             border: 1px solid #333;
-            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 11px;
         }
 
         #modal-overlay {
@@ -173,10 +271,11 @@
 
         #modal-content {
             background: #2e1a47;
-            padding: 50px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             border: 4px solid #7e57c2;
+            box-shadow: 0 0 50px rgba(126, 87, 194, 0.5);
         }
     </style>
 </head>
@@ -184,65 +283,61 @@
 <body>
     <h1>모션 코딩: 미로 탈출 (Mouse Version)</h1>
 
-    <div id="stage-info">
-        <button class="nav-btn" onclick="prevStage()">&#10094;</button>
-        <span id="stage-text">Stage 1 / 20</span>
-        <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
-    </div>
+    <div id="main-layout">
+        <div id="left-panel">
+            <div id="block-palette">
+                <div class="palette-btn" onclick="addBlock('move_forward', '앞으로 이동', '⬆️')">
+                    <span>⬆️</span> 앞으로 이동
+                </div>
+                <div class="palette-btn" onclick="addBlock('turn_left', '왼쪽 회전', '↩️')">
+                    <span>↩️</span> 왼쪽 회전
+                </div>
+                <div class="palette-btn" onclick="addBlock('turn_right', '오른쪽 회전', '↪️')">
+                    <span>↪️</span> 오른쪽 회전
+                </div>
+                <div class="palette-btn execute" onclick="executeCode()">
+                    <span>▶️</span> 실행하기
+                </div>
+            </div>
+            <div
+                style="background: rgba(239, 83, 80, 0.1); border: 1px dashed #ef5350; border-radius: 12px; padding: 10px; font-size: 13px; color: #ef5350; text-align: center;">
+                <strong>🗑️ 삭제</strong> : 삭제를 원하는 블록 클릭하기
+            </div>
+            <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
+        </div>
 
-    <div id="maze-container">
-        <canvas id="maze-canvas" width="480" height="480"></canvas>
-    </div>
-
-    <div id="block-palette">
-        <div class="palette-btn" onclick="addBlock('move_forward', '앞으로 이동', '⬆️')">
-            <span>⬆️</span> 앞으로 이동
-        </div>
-        <div class="palette-btn" onclick="addBlock('turn_left', '왼쪽 회전', '↩️')">
-            <span>↩️</span> 왼쪽 회전
-        </div>
-        <div class="palette-btn" onclick="addBlock('turn_right', '오른쪽 회전', '↪️')">
-            <span>↪️</span> 오른쪽 회전
-        </div>
-        <div class="palette-btn execute" onclick="executeCode()">
-            <span>▶️</span> 실행하기
+        <div id="right-panel">
+            <div id="stage-info">
+                <button class="nav-btn" onclick="prevStage()">&#10094;</button>
+                <span id="stage-text">Stage 1 / 20</span>
+                <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
+            </div>
+            <div id="maze-outer">
+                <canvas id="maze-canvas"></canvas>
+            </div>
+            <div class="code-area-wrapper">
+                <div id="code-area"></div>
+            </div>
+            <div id="console-log"></div>
         </div>
     </div>
-
-    <div id="code-area"></div>
-    <div id="console-log"></div>
 
     <div id="modal-overlay">
         <div id="modal-content">
-            <div id="modal-title">스테이지 클리어!</div>
+            <div id="modal-title" style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: #ffd700;">스테이지
+                클리어!</div>
             <button id="modal-btn" onclick="nextStage()"
-                style="padding: 20px 40px; font-size: 24px; background: #00acc1; color: white; border: none; border-radius: 10px; cursor: pointer;">다음
+                style="padding: 15px 40px; font-size: 24px; background: #00acc1; color: white; border: none; border-radius: 10px; cursor: pointer;">다음
                 스테이지로</button>
         </div>
     </div>
 
     <script>
-        // --- Global State ---
-        const state = {
-            participantId: null,
-            sessionId: crypto.randomUUID(),
-            stageId: 1,
-            attemptId: 0,
-            logs: [],
-            codeBlocks: [],
-            isExecuting: false,
-            currentMotion: null,
-            suggestedBlock: null,
-            lastMotionTime: 0
-        };
+        const state = { participantId: null, sessionId: crypto.randomUUID(), stageId: 1, attemptId: 0, logs: [], codeBlocks: [], isExecuting: false, currentMotion: null, suggestedBlock: null, lastMotionTime: 0 };
 
-        // --- Logger ---
         function initLogger() {
-            let pid = localStorage.getItem('participant_id');
-            if (!pid) {
-                pid = crypto.randomUUID();
-                localStorage.setItem('participant_id', pid);
-            }
+            let pid = localStorage.getItem('participant_id') || crypto.randomUUID();
+            localStorage.setItem('participant_id', pid);
             state.participantId = pid;
             logEvent('session_start', { input_mode: 'mouse' });
         }
@@ -288,45 +383,257 @@
         }
 
         // --- Maze Game Logic ---
-        const TILE_SIZE = 60; // 8x8 grid in 480x480
-        const GRID_SIZE = 8;
+        const GRID_SIZE = 6;
 
         const STAGES = {
-            1: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 6, dir: 0 } },
-            2: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 2, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 4, dir: 1 } },
-            3: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 6, dir: 0 } },
-            4: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 6, y: 4, dir: 3 } },
-            5: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 2, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 5, dir: 0 } },
-            6: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 5, dir: 0 } },
-            7: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 3, y: 5, dir: 0 } },
-            8: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 2, 0, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 5, dir: 0 } },
-            9: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 5, dir: 1 } },
-            10: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 5, dir: 3 } },
-            11: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 2, 0, 0, 0]], start: { x: 4, y: 4, dir: 2 } },
-            12: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 2, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 3, dir: 2 } },
-            13: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 0, 0], [0, 0, 0, 0, 1, 0, 1, 0], [0, 0, 0, 0, 0, 0, 2, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 0 } },
-            14: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 2, 1, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 2, y: 5, dir: 0 } },
-            15: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 2, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 5, y: 5, dir: 3 } },
-            16: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 2, 0], [0, 1, 0, 0, 0, 1, 0, 0], [0, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 1, dir: 2 } },
-            17: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 2, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 2, dir: 1 } },
-            18: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 0, 2, 0, 0, 1, 0], [0, 1, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 6, dir: 0 } },
-            19: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 0, 1, 1, 0, 1, 0], [0, 1, 0, 2, 1, 0, 1, 0], [0, 1, 0, 0, 0, 0, 1, 0], [0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 1, y: 6, dir: 0 } },
-            20: { grid: [[0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 1, 1, 2], [0, 1, 0, 1, 0, 1, 0, 0], [0, 1, 0, 1, 1, 1, 0, 0], [0, 1, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], start: { x: 5, y: 6, dir: 2 } }
+            // 1~2: 전진 3칸
+            1: {
+                grid: [
+                    [0, 2, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 3, dir: 0 }
+            },
+            2: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 2, dir: 1 }
+            },
+            3: {
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 2, y: 4, dir: 0 }
+            },
+            4: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 3, dir: 1 }
+            },
+            5: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 2, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 3, dir: 0 }
+            },
+            6: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 2, 1, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 3, y: 3, dir: 0 }
+            },
+            7: {
+                grid: [
+                    [0, 0, 0, 2, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 4, dir: 0 }
+            },
+            8: {
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 4, y: 4, dir: 0 }
+            },
+            9: {
+                grid: [
+                    [0, 0, 0, 2, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 4, dir: 1 }
+            },
+            10: {
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 4, y: 4, dir: 3 }
+            },
+            11: {
+                grid: [
+                    [0, 0, 0, 2, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 4, dir: 3 }
+            },
+            12: {
+                grid: [
+                    [0, 0, 2, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 4, y: 4, dir: 1 }
+            },
+            13: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 0],
+                    [0, 1, 0, 1, 0, 0],
+                    [0, 1, 0, 1, 0, 0],
+                    [0, 1, 0, 2, 0, 0],
+                ],
+                start: { x: 1, y: 5, dir: 0 }
+            },
+            14: {
+                grid: [
+                    [0, 1, 1, 2, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                ],
+                start: { x: 1, y: 5, dir: 0 }
+            },
+            15: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 2],
+                    [1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 4, dir: 0 }
+            },
+            16: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [2, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [1, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 4, dir: 0 }
+            },
+            17: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 1, 1, 1, 1, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 1, 1, 2, 0, 0],
+                ],
+                start: { x: 1, y: 1, dir: 1 }
+            },
+            18: {
+                grid: [
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 2, 0, 1],
+                    [1, 1, 1, 1, 0, 1],
+                    [0, 0, 0, 0, 0, 1],
+                    [0, 1, 1, 1, 1, 1],
+                ],
+                start: { x: 1, y: 5, dir: 1 }
+            },
+            19: {
+                grid: [
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 0],
+                    [1, 0, 2, 1, 0, 0],
+                    [1, 0, 1, 1, 0, 0],
+                    [1, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 5, y: 0, dir: 3 }
+            },
+            20: {
+                grid: [
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [1, 1, 1, 0, 1, 0],
+                    [0, 0, 1, 1, 1, 0],
+                    [0, 0, 1, 1, 2, 0],
+                    [0, 0, 0, 0, 0, 0],
+                ],
+                start: { x: 0, y: 2, dir: 1 }
+            }
         };
 
-        let player = { x: 0, y: 0, dir: 1 };
-
+        let player = { x: 0, y: 0, dir: 0 };
         const mazeCanvas = document.getElementById('maze-canvas');
+        const mazeOuter = document.getElementById('maze-outer');
         const ctx = mazeCanvas.getContext('2d');
+        let TILE_SIZE = 60;
+
+        function resizeCanvas() {
+            const rect = mazeOuter.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            mazeCanvas.width = rect.width * dpr;
+            mazeCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            TILE_SIZE = Math.min(rect.width, rect.height) / GRID_SIZE;
+            drawMaze();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
 
         function initStage(id) {
-            if (id < 1) id = 1;
-            if (id > 20) id = 20;
-            state.stageId = id;
-            document.getElementById('stage-text').innerText = `Stage ${id} / 20`;
+            state.stageId = Math.max(1, Math.min(id, 20));
+            document.getElementById('stage-text').innerText = `Stage ${state.stageId} / 20`;
             resetPlayer();
-            if (catImage.complete) drawMaze();
-            else catImage.onload = drawMaze;
+            if (catImage.complete) drawMaze(); else catImage.onload = drawMaze;
         }
 
         function resetPlayer() {
@@ -355,46 +662,32 @@
         catImage.src = 'data:image/svg+xml;base64,' + btoa(catSvg);
 
         function drawMaze() {
-            ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-            const grid = STAGES[state.stageId].grid;
+            const rect = mazeOuter.getBoundingClientRect();
+            ctx.clearRect(0, 0, rect.width, rect.height);
 
+            const offsetX = (rect.width - (GRID_SIZE * TILE_SIZE)) / 2;
+            const offsetY = (rect.height - (GRID_SIZE * TILE_SIZE)) / 2;
+
+            const grid = STAGES[state.stageId].grid;
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
                     const cell = grid[y][x];
-                    const px = x * TILE_SIZE;
-                    const py = y * TILE_SIZE;
-
-                    function roundRect(x, y, w, h, radius, fill) {
+                    const px = offsetX + x * TILE_SIZE, py = offsetY + y * TILE_SIZE;
+                    if (cell === 1 || cell === 2) {
                         ctx.beginPath();
-                        ctx.moveTo(x + radius, y);
-                        ctx.lineTo(x + w - radius, y);
-                        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-                        ctx.lineTo(x + w, y + h - radius);
-                        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-                        ctx.lineTo(x + radius, y + h);
-                        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-                        ctx.lineTo(x, y + radius);
-                        ctx.quadraticCurveTo(x, y, x + radius, y);
-                        ctx.closePath();
-                        ctx.fillStyle = fill;
+                        ctx.roundRect(px + TILE_SIZE * 0.1, py + TILE_SIZE * 0.1, TILE_SIZE * 0.8, TILE_SIZE * 0.8, TILE_SIZE * 0.2);
+                        ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
                         ctx.fill();
-                    }
-
-                    if (cell === 1) {
-                        roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#7e57c2');
-                    } else if (cell === 2) {
-                        roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 15, '#ec407a');
+                        if (cell === 1) {
+                            ctx.fillStyle = "rgba(255,255,255,0.2)";
+                            ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill();
+                        }
                     }
                 }
             }
-
-            const cx = player.x * TILE_SIZE + TILE_SIZE / 2;
-            const cy = player.y * TILE_SIZE + TILE_SIZE / 2;
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(player.dir * 90 * Math.PI / 180);
-            const size = TILE_SIZE * 0.8;
-            ctx.drawImage(catImage, -size / 2, -size / 2, size, size);
+            const cx = offsetX + player.x * TILE_SIZE + TILE_SIZE / 2, cy = offsetY + player.y * TILE_SIZE + TILE_SIZE / 2;
+            ctx.save(); ctx.translate(cx, cy); ctx.rotate(player.dir * 90 * Math.PI / 180);
+            ctx.drawImage(catImage, -TILE_SIZE * 0.4, -TILE_SIZE * 0.4, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
             ctx.restore();
         }
 
@@ -480,14 +773,32 @@
 
         function updateCodeUI() {
             const area = document.getElementById('code-area');
-            area.innerHTML = '';
-            state.codeBlocks.forEach((block, index) => {
-                const el = document.createElement('div');
-                el.className = `code-block ${block.type}`;
-                el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                el.onclick = () => removeBlockAtIndex(index);
-                area.appendChild(el);
-            });
+            const currentCount = area.children.length;
+            const targetCount = state.codeBlocks.length;
+
+            if (targetCount > currentCount) {
+                // 블록이 추가된 경우: 마지막 블록만 추가 (깜빡임 방지)
+                const startIndex = currentCount;
+                for (let i = startIndex; i < targetCount; i++) {
+                    const block = state.codeBlocks[i];
+                    const el = document.createElement('div');
+                    el.className = `code-block ${block.type}`;
+                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                    const currentIndex = i;
+                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(currentIndex, 1); updateCodeUI(); } };
+                    area.appendChild(el);
+                }
+            } else {
+                // 블록이 삭제되거나 초기화된 경우: 전체 리렌더링
+                area.innerHTML = '';
+                state.codeBlocks.forEach((block, index) => {
+                    const el = document.createElement('div');
+                    el.className = `code-block ${block.type}`;
+                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(index, 1); updateCodeUI(); } };
+                    area.appendChild(el);
+                });
+            }
         }
 
         function addBlock(type, name, icon) {

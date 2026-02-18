@@ -18,6 +18,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* 제목과 레이아웃 중앙 정렬 */
             height: 100vh;
             overflow: hidden;
             box-sizing: border-box;
@@ -40,6 +41,8 @@
             min-height: 0;
             gap: 20px;
             justify-content: center;
+            align-items: flex-start;
+            /* 카메라와 미로 상단 높이 맞춤 */
             padding-bottom: 10px;
         }
 
@@ -50,6 +53,8 @@
             height: 100%;
             min-height: 0;
             position: relative;
+            margin-top: 56px;
+            /* 스테이지 정보 높이만큼 하단 이동 */
         }
 
         #right-panel {
@@ -130,23 +135,42 @@
             margin-bottom: 2px;
         }
 
-        .suggestion-name {
-            font-size: 22px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 2px;
-        }
-
+        .suggestion-name,
         .suggestion-desc {
-            font-size: 14px;
-            color: #d1c4e9;
+            display: none;
         }
 
         .suggestion-placeholder {
-            color: #aaa;
-            font-style: italic;
-            font-size: 14px;
-            line-height: 1.4;
+            display: none;
+        }
+
+        /* Action Guide Styles */
+        #action-guide {
+            background: rgba(30, 20, 50, 0.7);
+            border-radius: 15px;
+            border: 1px solid #5e35b1;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+        }
+
+        .guide-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .guide-text {
+            color: #d1c4e9;
         }
 
         #stage-info {
@@ -182,30 +206,22 @@
             transform: scale(1.1);
         }
 
-        #maze-container {
+        #maze-outer {
             flex: 1;
             min-height: 0;
             position: relative;
             background: rgba(30, 20, 50, 0.7);
             border-radius: 20px;
-            padding: 15px;
             box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             border: 2px solid #5e35b1;
+            overflow: hidden;
+            /* 컨테이너를 꽉 채우기 위해 */
         }
 
         #maze-canvas {
-            background: transparent;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            aspect-ratio: 1 / 1;
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .code-area-wrapper {
@@ -267,20 +283,19 @@
         }
 
         #btn-download {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
             background: #28a745;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 12px 25px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.2s;
-            z-index: 20;
+            margin: 15px 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            align-self: center;
+            width: 100%;
         }
 
         #btn-download:hover {
@@ -348,6 +363,30 @@
                     </div>
                 </div>
             </div>
+            <div id="action-guide">
+                <div class="guide-item">
+                    <span class="guide-icon">⬆️</span>
+                    <span class="guide-text"><strong>앞으로 나란히</strong> : 앞으로 이동</span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">↩️</span>
+                    <span class="guide-text"><strong>왼팔 옆으로</strong> : 왼쪽 회전</span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">↪️</span>
+                    <span class="guide-text"><strong>오른팔 옆으로</strong> : 오른쪽 회전</span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">▶️</span>
+                    <span class="guide-text"><strong>만세 (양손 위로)</strong> : 실행하기</span>
+                </div>
+                <div class="guide-item"
+                    style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px;">
+                    <span class="guide-icon">🗑️</span>
+                    <span class="guide-text" style="color: #ef5350;"><strong>삭제</strong> : 삭제를 원하는 블록 클릭하기</span>
+                </div>
+            </div>
+            <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
         </div>
         <div id="right-panel">
             <div id="stage-info">
@@ -355,9 +394,8 @@
                 <span id="stage-text">Stage 1 / 20</span>
                 <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
             </div>
-            <div id="maze-container">
-                <canvas id="maze-canvas" width="360" height="360"></canvas>
-                <button id="btn-download" class="action-btn">로그 저장</button>
+            <div id="maze-outer">
+                <canvas id="maze-canvas"></canvas>
             </div>
             <div class="code-area-wrapper">
                 <div id="code-area"></div>
@@ -399,6 +437,12 @@
         function logEvent(type, data = {}) {
             const now = new Date();
             const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(now.getMilliseconds()).padStart(3, '0')}`;
+
+            // confidence가 있으면 소수점 2자리로 포맷팅
+            if (data.confidence !== undefined) {
+                data.confidence = Number(Number(data.confidence).toFixed(2));
+            }
+
             const entry = { participant_id: state.participantId, session_id: state.sessionId, stage_id: state.stageId, attempt_id: state.attemptId, timestamp: timestamp, event_type: type, ...data };
             state.logs.push(entry);
             const logDiv = document.getElementById('console-log');
@@ -417,9 +461,25 @@
         }
 
         const mazeCanvas = document.getElementById('maze-canvas');
+        const mazeOuter = document.getElementById('maze-outer');
         const ctx = mazeCanvas.getContext('2d');
         const GRID_SIZE = 6;
-        const TILE_SIZE = mazeCanvas.width / GRID_SIZE;
+        let TILE_SIZE = 60;
+
+        function resizeCanvas() {
+            const rect = mazeOuter.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            mazeCanvas.width = rect.width * dpr;
+            mazeCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            TILE_SIZE = Math.min(rect.width, rect.height) / GRID_SIZE;
+            drawMaze();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        // 초기 크기 설정
+        setTimeout(resizeCanvas, 100);
 
         const STAGES = {
             // 1~2: 전진 3칸
@@ -693,25 +753,30 @@
         }
 
         function drawMaze() {
-            ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+            const rect = mazeOuter.getBoundingClientRect();
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            const offsetX = (rect.width - (GRID_SIZE * TILE_SIZE)) / 2;
+            const offsetY = (rect.height - (GRID_SIZE * TILE_SIZE)) / 2;
+
             const grid = STAGES[state.stageId].grid;
             for (let y = 0; y < GRID_SIZE; y++) {
                 for (let x = 0; x < GRID_SIZE; x++) {
                     const cell = grid[y][x];
-                    const px = x * TILE_SIZE, py = y * TILE_SIZE;
+                    const px = offsetX + x * TILE_SIZE, py = offsetY + y * TILE_SIZE;
                     if (cell === 1 || cell === 2) {
                         ctx.beginPath();
-                        ctx.roundRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8, 10);
+                        ctx.roundRect(px + TILE_SIZE * 0.1, py + TILE_SIZE * 0.1, TILE_SIZE * 0.8, TILE_SIZE * 0.8, TILE_SIZE * 0.2);
                         ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
                         ctx.fill();
                         if (cell === 1) {
                             ctx.fillStyle = "rgba(255,255,255,0.2)";
-                            ctx.beginPath(); ctx.arc(px + 15, py + 15, 3, 0, Math.PI * 2); ctx.fill();
+                            ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill();
                         }
                     }
                 }
             }
-            const cx = player.x * TILE_SIZE + TILE_SIZE / 2, cy = player.y * TILE_SIZE + TILE_SIZE / 2;
+            const cx = offsetX + player.x * TILE_SIZE + TILE_SIZE / 2, cy = offsetY + player.y * TILE_SIZE + TILE_SIZE / 2;
             ctx.save(); ctx.translate(cx, cy); ctx.rotate(player.dir * 90 * Math.PI / 180);
             ctx.drawImage(catImage, -TILE_SIZE * 0.4, -TILE_SIZE * 0.4, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
             ctx.restore();
@@ -760,13 +825,33 @@
         window.nextStageDev = () => initStage(state.stageId + 1);
 
         function updateCodeUI() {
-            const area = document.getElementById('code-area'); area.innerHTML = '';
-            state.codeBlocks.forEach((block, index) => {
-                const el = document.createElement('div'); el.className = `code-block ${block.type}`;
-                el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(index, 1); updateCodeUI(); } };
-                area.appendChild(el);
-            });
+            const area = document.getElementById('code-area');
+            const currentCount = area.children.length;
+            const targetCount = state.codeBlocks.length;
+
+            if (targetCount > currentCount) {
+                // 블록이 추가된 경우: 마지막 블록만 추가 (깜빡임 방지)
+                const startIndex = currentCount;
+                for (let i = startIndex; i < targetCount; i++) {
+                    const block = state.codeBlocks[i];
+                    const el = document.createElement('div');
+                    el.className = `code-block ${block.type}`;
+                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                    const currentIndex = i;
+                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(currentIndex, 1); updateCodeUI(); } };
+                    area.appendChild(el);
+                }
+            } else {
+                // 블록이 삭제되거나 초기화된 경우: 전체 리렌더링
+                area.innerHTML = '';
+                state.codeBlocks.forEach((block, index) => {
+                    const el = document.createElement('div');
+                    el.className = `code-block ${block.type}`;
+                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
+                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(index, 1); updateCodeUI(); } };
+                    area.appendChild(el);
+                });
+            }
         }
 
         function setSuggestion(type, name, icon, instruction, confidence = null) {
@@ -787,9 +872,13 @@
         document.body.addEventListener('click', (e) => {
             if (e.target.closest('button') || e.target.closest('.code-block')) return;
             if (state.suggestedBlock && !state.isExecuting) {
-                const { type, name, icon } = state.suggestedBlock;
+                const { type, name, icon, confidence } = state.suggestedBlock;
                 if (type === 'execute') executeCode();
-                else { state.codeBlocks.push({ type, name, icon }); updateCodeUI(); logEvent('block_confirmed', { type }); }
+                else {
+                    state.codeBlocks.push({ type, name, icon });
+                    updateCodeUI();
+                    logEvent('block_confirmed', { type, confidence }); // confidence 추가
+                }
             }
         });
 
@@ -806,10 +895,26 @@
             const nose = lm[0], ls = lm[11], rs = lm[12], lw = lm[15], rw = lm[16];
             let detected = null, confidence = 0;
             const getVis = (...l) => l.reduce((a, v) => a + (v.visibility || 0), 0) / l.length;
-            if (lw.y < nose.y && rw.y < nose.y) detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙌 두 손을 위로' };
-            else if (Math.abs(lw.x - nose.x) < 0.15 && Math.abs(lw.y - nose.y) < 0.15 && Math.abs(rw.x - nose.x) < 0.15 && Math.abs(rw.y - nose.y) < 0.15) detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙆 머리에 손을 올리세요' };
-            else if (Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
-            else if (Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
+            const dist_w = Math.sqrt(Math.pow(lw.x - rw.x, 2) + Math.pow(lw.y - rw.y, 2));
+            const shoulder_width = Math.abs(ls.x - rs.x);
+
+            // 1. 만세 (양손이 머리보다 높음) -> 실행하기
+            if (lw.y < nose.y - 0.1 && rw.y < nose.y - 0.1) {
+                detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙌 만세!' };
+            }
+            // 2. 앞으로 나란히 (손이 어깨 높이 근처이고, 양손 사이의 거리가 어깨 너비와 비슷)
+            // Z축을 활용하여 손이 어깨보다 앞에 있는지 확인 (MediaPipe Pose의 z는 카메라에 가까울수록 작은 값)
+            else if (Math.abs(lw.y - ls.y) < 0.15 && Math.abs(rw.y - rs.y) < 0.15 && lw.z < ls.z - 0.1 && rw.z < rs.z - 0.1) {
+                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙆 앞으로 나란히' };
+            }
+            // 3. 오른쪽 회전 (오른팔을 옆으로)
+            else if (Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) {
+                detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
+            }
+            // 4. 왼쪽 회전 (왼팔을 옆으로)
+            else if (Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) {
+                detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
+            }
             if (detected) { setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, getVis(lw, rw, nose)); state.lastMotionTime = now; }
         }
 
