@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모션 코딩: 미로 탈출 (삭제 동작)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 5px 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at center, #1a2e1a 0%, #0b1a0b 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 5px 0 10px 0;
+            text-shadow: 0 0 20px rgba(43, 226, 100, 0.8);
+            flex-shrink: 0;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #2e7d32;
+            color: #a5d6a7;
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 6px;
+            vertical-align: middle;
+            border: 1px solid #43a047;
+        }
+
+        .version-badge.red {
+            background: #b71c1c;
+            color: #ffcdd2;
+            border-color: #ef5350;
+        }
+
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            max-width: 1600px;
+            flex: 1;
+            min-height: 0;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding-bottom: 10px;
+        }
+
+        #left-panel {
+            flex: 0 0 640px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            position: relative;
+            margin-top: 56px;
+        }
+
+        #right-panel {
+            flex: 1;
+            min-width: 400px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        #video-container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            border: 4px solid #2e7d32;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #000;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(46, 125, 50, 0.6);
+            align-self: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #video-container.delete-one {
+            border-color: #ef5350;
+            box-shadow: 0 0 30px rgba(239, 83, 80, 0.8);
+        }
+
+        #video-container.delete-all {
+            border-color: #e91e63;
+            box-shadow: 0 0 35px rgba(233, 30, 99, 0.9);
+        }
+
+        .input_video {
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+            opacity: 0.6;
+        }
+
+        .output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        #suggestion-box {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: fit-content;
+            min-width: 280px;
+            max-width: 80%;
+            background: rgba(5, 25, 5, 0.9);
+            border-radius: 18px;
+            border: 2px solid #81c784;
+            padding: 10px 25px 10px 16px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            gap: 12px;
+        }
+
+        #suggestion-box.active {
+            background: rgba(27, 94, 32, 0.95);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
+            border-color: #fff;
+            transform: translateX(-50%) scale(1.02);
+        }
+
+        #suggestion-box.delete-one {
+            background: rgba(183, 28, 28, 0.95);
+            box-shadow: 0 0 30px rgba(239, 83, 80, 0.9);
+            border-color: #ef5350;
+            transform: translateX(-50%) scale(1.02);
+        }
+
+        #suggestion-box.delete-all {
+            background: rgba(136, 14, 79, 0.95);
+            box-shadow: 0 0 35px rgba(233, 30, 99, 1);
+            border-color: #e91e63;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        #gauge-track {
+            width: 12px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        #gauge-fill {
+            width: 100%;
+            height: 0%;
+            border-radius: 6px;
+            background: white;
+            transition: height 0.1s linear, background 0.1s linear;
+        }
+
+        #suggestion-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .suggestion-icon {
+            font-size: 44px;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-name,
+        .suggestion-desc {
+            display: none;
+        }
+
+        #action-guide {
+            background: rgba(20, 30, 20, 0.7);
+            border-radius: 15px;
+            border: 1px solid #2e7d32;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 16px;
+        }
+
+        .guide-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .guide-text {
+            color: #c8e6c9;
+        }
+
+        #stage-info {
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #c8e6c9;
+            text-shadow: 0 0 10px #43a047;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #43a047;
+            color: #c8e6c9;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(67, 160, 71, 0.5);
+            transform: scale(1.1);
+        }
+
+        #maze-outer {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            background: rgba(20, 30, 20, 0.7);
+            border-radius: 20px;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 175, 80, 0.2);
+            border: 2px solid #2e7d32;
+            overflow: hidden;
+        }
+
+        #maze-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .code-area-wrapper {
+            height: 140px;
+            flex-shrink: 0;
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #code-area {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #1b5e20;
+            border-radius: 15px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #code-area.delete-one {
+            border-color: #ef5350;
+            box-shadow: 0 0 12px rgba(239, 83, 80, 0.5);
+        }
+
+        #code-area.delete-all {
+            border-color: #e91e63;
+            box-shadow: 0 0 12px rgba(233, 30, 99, 0.6);
+        }
+
+        .code-block {
+            background: #2e7d32;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default;
+            transition: background 0.3s, opacity 0.3s;
+        }
+
+        .code-block.latest {
+            background: #43a047;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+
+        .code-block.to-delete {
+            background: #c62828 !important;
+            box-shadow: 0 0 10px rgba(239, 83, 80, 0.7) !important;
+        }
+
+        .code-block.to-delete-all {
+            background: #ad1457 !important;
+            opacity: 0.6 !important;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #btn-reset {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            flex: 1;
+        }
+
+        #btn-reset:hover {
+            background: #b71c1c;
+            transform: scale(1.05);
+        }
+
+        #btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            flex: 1;
+        }
+
+        #btn-download:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        #console-log {
+            height: 160px;
+            width: 100%;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            font-family: 'Consolas', monospace;
+            padding: 8px;
+            border-radius: 10px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            box-sizing: border-box;
+            font-size: 11px;
+        }
+
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #modal-content {
+            background: #1a2e1a;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #43a047;
+            box-shadow: 0 0 50px rgba(76, 175, 80, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>
+        모션 코딩: 미로 탈출
+        <span class="version-badge">⚡ 즉시 실행</span>
+        <span class="version-badge red">🗑️ 삭제 동작</span>
+    </h1>
+
+    <div id="main-layout">
+        <div id="left-panel">
+            <div id="video-container">
+                <video id="input-video" class="input_video"></video>
+                <canvas class="output_canvas" width="640" height="480"></canvas>
+                <div id="suggestion-box">
+                    <div id="gauge-track">
+                        <div id="gauge-fill"></div>
+                    </div>
+                    <div id="suggestion-inner">
+                        <div id="suggestion-content" style="display:none;">
+                            <div id="suggestion-icon" class="suggestion-icon"></div>
+                            <div id="suggestion-text" class="suggestion-name"></div>
+                            <div id="suggestion-instruction" class="suggestion-desc"></div>
+                        </div>
+                        <div id="suggestion-placeholder">
+                            <span style="font-size:30px;display:block;margin-bottom:5px;">👋</span>
+                            카메라 앞에서 동작을 취해보세요.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="action-guide">
+                <div class="guide-item">
+                    <span class="guide-icon">⬆️</span>
+                    <span class="guide-text"><strong>앞으로 나란히</strong> : 앞으로 이동 <strong>(2초 유지)</strong></span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">↩️</span>
+                    <span class="guide-text"><strong>왼팔 옆으로</strong> : 왼쪽 회전 <strong>(2초 유지)</strong></span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">↪️</span>
+                    <span class="guide-text"><strong>오른팔 옆으로</strong> : 오른쪽 회전 <strong>(2초 유지)</strong></span>
+                </div>
+                <div class="guide-item"
+                    style="border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;margin-top:3px;">
+                    <span class="guide-icon">❌</span>
+                    <span class="guide-text" style="color:#ef9a9a;"><strong>몸 앞에서 팔 X자</strong> : 직전 블록 삭제 <strong>(3초
+                            유지)</strong></span>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-icon">👇</span>
+                    <span class="guide-text" style="color:#ef9a9a;"><strong>만세 후 팔 아래로</strong> : 전체 삭제 <strong>(3초
+                            유지)</strong></span>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
+            </div>
+        </div>
+        <div id="right-panel">
+            <div id="stage-info">
+                <button class="nav-btn" onclick="prevStage()">&#10094;</button>
+                <span id="stage-text">Stage 1 / 20</span>
+                <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
+            </div>
+            <div id="maze-outer"><canvas id="maze-canvas"></canvas></div>
+            <div class="code-area-wrapper">
+                <div id="code-area"></div>
+            </div>
+            <div id="console-log"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-content">
+            <div id="modal-title" style="font-size:32px;font-weight:bold;margin-bottom:20px;color:#ffd700;">스테이지 클리어!
+            </div>
+            <button id="modal-btn" onclick="nextStage()"
+                style="padding:15px 40px;font-size:24px;background:#00acc1;color:white;border:none;border-radius:10px;cursor:pointer;">다음
+                스테이지로</button>
+        </div>
+    </div>
+
+    <script type="module">
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const canvasCtx = canvasElement.getContext('2d');
+        const videoContainer = document.getElementById('video-container');
+        const suggestionBox = document.getElementById('suggestion-box');
+        const suggestionContent = document.getElementById('suggestion-content');
+        const suggestionPlaceholder = document.getElementById('suggestion-placeholder');
+        const suggestionIcon_El = document.getElementById('suggestion-icon');
+        const suggestionText = document.getElementById('suggestion-text');
+        const suggestionInst = document.getElementById('suggestion-instruction');
+        const gaugeFill = document.getElementById('gauge-fill');
+        const codeArea = document.getElementById('code-area');
+
+        const HOLD_MOVE = 2000;   // 이동: 2초
+        const HOLD_DELETE = 3000; // 삭제: 3초
+        const CONFIRM_COOLDOWN = 1000; // 확정 후 쿨다운
+
+        function getHoldDuration(type) {
+            return (type === 'delete_one' || type === 'delete_all') ? HOLD_DELETE : HOLD_MOVE;
+        }
+
+        const state = {
+            participantId: null,
+            sessionId: crypto.randomUUID(),
+            stageId: 1,
+            attemptId: 0,
+            logs: [],
+            actionHistory: [],      // 실행 히스토리
+            isMoving: false,        // 고양이 이동 중 중복 감지 방지
+            currentMotion: null,
+            suggestedBlock: null,
+            motionHoldStart: null,
+            lastConfirmTime: 0,
+        };
+
+        // ── Logger ──────────────────────────────────────────────────
+        function initLogger() {
+            let pid = localStorage.getItem('participant_id') || crypto.randomUUID();
+            localStorage.setItem('participant_id', pid);
+            state.participantId = pid;
+            logEvent('session_start');
+        }
+
+        function logEvent(type, data = {}) {
+            const now = new Date();
+            const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(now.getMilliseconds()).padStart(3, '0')}`;
+            if (data.confidence !== undefined) data.confidence = Number(Number(data.confidence).toFixed(2));
+            state.logs.push({ participant_id: state.participantId, session_id: state.sessionId, stage_id: state.stageId, attempt_id: state.attemptId, timestamp: ts, event_type: type, ...data });
+            const logDiv = document.getElementById('console-log');
+            const line = document.createElement('div');
+            line.innerText = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}] ${type}: ${JSON.stringify(data)}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        window.downloadLogs = () => {
+            const dl = document.createElement('a');
+            dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2)));
+            dl.setAttribute("download", `motion_coding_delete_log_${state.sessionId}.json`);
+            dl.click();
+        };
+
+        // ── 게이지 ──────────────────────────────────────────────────
+        function updateGauge(ratio, mode) {
+            const pct = Math.min(1, Math.max(0, ratio)) * 100;
+            gaugeFill.style.height = pct + '%';
+            let r, g, b;
+            if (mode === 'delete-one') {
+                r = Math.round(255 - (255 - 239) * ratio); g = Math.round(255 - (255 - 83) * ratio); b = Math.round(255 - (255 - 80) * ratio);
+            } else if (mode === 'delete-all') {
+                r = Math.round(255 - (255 - 233) * ratio); g = Math.round(255 - (255 - 30) * ratio); b = Math.round(255 - (255 - 99) * ratio);
+            } else {
+                r = Math.round(255 - (255 - 76) * ratio); g = Math.round(255 - (255 - 175) * ratio); b = Math.round(255 - (255 - 80) * ratio);
+            }
+            gaugeFill.style.background = `rgb(${r},${g},${b})`;
+        }
+        function resetGauge() { gaugeFill.style.height = '0%'; gaugeFill.style.background = 'white'; }
+
+        // ── 코드 영역 + 카메라 경고 표시 ─────────────────────────────
+        function setDeleteWarning(mode) {
+            codeArea.classList.remove('delete-one', 'delete-all');
+            videoContainer.classList.remove('delete-one', 'delete-all');
+            codeArea.querySelectorAll('.code-block').forEach(b => b.classList.remove('to-delete', 'to-delete-all'));
+            if (mode === 'one') {
+                codeArea.classList.add('delete-one');
+                videoContainer.classList.add('delete-one');
+                const blocks = codeArea.querySelectorAll('.code-block');
+                if (blocks.length > 0) blocks[blocks.length - 1].classList.add('to-delete');
+            } else if (mode === 'all') {
+                codeArea.classList.add('delete-all');
+                videoContainer.classList.add('delete-all');
+                codeArea.querySelectorAll('.code-block').forEach(b => b.classList.add('to-delete-all'));
+            }
+        }
+
+        // ── Suggestion 박스 ──────────────────────────────────────────
+        function setSuggestion(type, name, icon, instruction, confidence = null) {
+            if (state.currentMotion === type) return;
+            state.currentMotion = type;
+            state.motionHoldStart = Date.now();
+            resetGauge();
+            state.suggestedBlock = { type, name, icon, confidence };
+            suggestionBox.className = '';
+            if (type === 'delete_one') {
+                suggestionBox.classList.add('delete-one');
+                setDeleteWarning('one');
+            } else if (type === 'delete_all') {
+                suggestionBox.classList.add('delete-all');
+                setDeleteWarning('all');
+            } else {
+                suggestionBox.classList.add('active');
+                setDeleteWarning(null);
+            }
+            suggestionPlaceholder.style.display = 'none';
+            suggestionContent.style.display = 'block';
+            suggestionText.innerText = name;
+            suggestionIcon_El.innerText = icon;
+            suggestionInst.innerText = instruction;
+            logEvent('motion_detected', { type, confidence });
+        }
+
+        function clearSuggestion() {
+            if (state.currentMotion === null) return;
+            state.currentMotion = null;
+            state.suggestedBlock = null;
+            state.motionHoldStart = null;
+            resetGauge();
+            setDeleteWarning(null);
+            suggestionBox.className = '';
+            suggestionContent.style.display = 'none';
+            suggestionPlaceholder.style.display = 'block';
+        }
+
+        // ── 히스토리 UI ──────────────────────────────────────────────
+        function rebuildHistoryUI() {
+            codeArea.innerHTML = '';
+            state.actionHistory.forEach((item, idx) => {
+                const el = document.createElement('div');
+                el.className = 'code-block' + (idx === state.actionHistory.length - 1 ? ' latest' : '');
+                el.innerHTML = `<span>${item.icon}</span> ${item.name}`;
+                codeArea.appendChild(el);
+            });
+            codeArea.scrollTop = codeArea.scrollHeight;
+        }
+
+        function addHistoryBlock(icon, name) {
+            codeArea.querySelector('.latest')?.classList.remove('latest');
+            const el = document.createElement('div');
+            el.className = 'code-block latest';
+            el.innerHTML = `<span>${icon}</span> ${name}`;
+            codeArea.appendChild(el);
+            codeArea.scrollTop = codeArea.scrollHeight;
+        }
+
+        // ── 즉시 동작 실행 ───────────────────────────────────────────
+        function applyAction(type) {
+            const dx = [0, 1, 0, -1], dy = [-1, 0, 1, 0];
+            if (type === 'move_forward') {
+                const nx = player.x + dx[player.dir], ny = player.y + dy[player.dir];
+                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && STAGES[state.stageId].grid[ny][nx] !== 0) {
+                    player.x = nx; player.y = ny;
+                    logEvent('action_move_success', { x: nx, y: ny });
+                } else {
+                    logEvent('action_move_fail', { x: nx, y: ny });
+                }
+            } else if (type === 'turn_left') {
+                player.dir = (player.dir + 3) % 4;
+            } else if (type === 'turn_right') {
+                player.dir = (player.dir + 1) % 4;
+            }
+            drawMaze();
+        }
+
+        function replayHistory() {
+            player = { ...STAGES[state.stageId].start };
+            for (const item of state.actionHistory) applyAction(item.type);
+            rebuildHistoryUI();
+            drawMaze();
+        }
+
+        // ── 블록 확정 ────────────────────────────────────────────────
+        function confirmBlock() {
+            if (!state.suggestedBlock || state.isMoving) return;
+            const { type, name, icon, confidence } = state.suggestedBlock;
+            state.lastConfirmTime = Date.now();
+            state.attemptId++;
+
+            if (type === 'delete_one') {
+                if (state.actionHistory.length > 0) {
+                    state.actionHistory.pop();
+                    logEvent('block_deleted_one', { remaining: state.actionHistory.length });
+                    replayHistory();
+                } else {
+                    logEvent('block_delete_fail', { reason: 'empty' });
+                }
+            } else if (type === 'delete_all') {
+                const count = state.actionHistory.length;
+                state.actionHistory = [];
+                logEvent('block_deleted_all', { deleted_count: count });
+                replayHistory();
+                resetSlam();
+            } else {
+                state.actionHistory.push({ type, name, icon });
+                addHistoryBlock(icon, name);
+                logEvent('block_confirmed', { type, confidence });
+                state.isMoving = true;
+                applyAction(type);
+                state.isMoving = false;
+                if (STAGES[state.stageId].grid[player.y][player.x] === 2) {
+                    logEvent('stage_clear', { stage: state.stageId });
+                    setTimeout(() => showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700"), 400);
+                }
+            }
+
+            resetGauge();
+            setDeleteWarning(null);
+            state.motionHoldStart = null;
+            state.currentMotion = null;
+            state.suggestedBlock = null;
+            suggestionBox.className = '';
+            suggestionContent.style.display = 'none';
+            suggestionPlaceholder.style.display = 'block';
+        }
+
+        // ── 미로 ────────────────────────────────────────────────────
+        const mazeCanvas = document.getElementById('maze-canvas');
+        const mazeOuter = document.getElementById('maze-outer');
+        const ctx = mazeCanvas.getContext('2d');
+        const GRID_SIZE = 6;
+        let TILE_SIZE = 60;
+
+        function resizeCanvas() {
+            const rect = mazeOuter.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            mazeCanvas.width = rect.width * dpr;
+            mazeCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            TILE_SIZE = Math.min(rect.width, rect.height) / GRID_SIZE;
+            drawMaze();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 100);
+
+        const STAGES = {
+            1: { grid: [[0, 2, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 3, dir: 0 } },
+            2: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 2, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 2, dir: 1 } },
+            // ... (rest of stages unchanged)
+            3: { grid: [[0, 0, 2, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 2, y: 4, dir: 0 } },
+            4: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 2, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 0, y: 3, dir: 1 } },
+            5: { grid: [[0, 0, 0, 0, 0, 0], [0, 1, 1, 2, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 3, dir: 0 } },
+            6: { grid: [[0, 0, 0, 0, 0, 0], [0, 2, 1, 1, 0, 0], [0, 0, 0, 1, 0, 0], [0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 3, y: 3, dir: 0 } },
+            7: { grid: [[0, 0, 0, 2, 0, 0], [0, 0, 0, 1, 0, 0], [0, 1, 1, 1, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 4, dir: 0 } },
+            8: { grid: [[0, 0, 2, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 0 } },
+            9: { grid: [[0, 0, 0, 2, 0, 0], [0, 0, 0, 1, 0, 0], [0, 1, 1, 1, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 4, dir: 1 } },
+            10: { grid: [[0, 0, 2, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 3 } },
+            11: { grid: [[0, 0, 0, 2, 0, 0], [0, 0, 0, 1, 0, 0], [0, 1, 1, 1, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 1, y: 4, dir: 3 } },
+            12: { grid: [[0, 0, 2, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]], start: { x: 4, y: 4, dir: 1 } },
+            13: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0], [0, 1, 0, 1, 0, 0], [0, 1, 0, 1, 0, 0], [0, 1, 0, 2, 0, 0]], start: { x: 1, y: 5, dir: 0 } },
+            14: { grid: [[0, 1, 1, 2, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0]], start: { x: 1, y: 5, dir: 0 } },
+            15: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 2], [1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 0, y: 4, dir: 0 } },
+            16: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [2, 1, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0], [1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0]], start: { x: 0, y: 4, dir: 0 } },
+            17: { grid: [[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0], [0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 0, 0], [0, 1, 1, 2, 0, 0]], start: { x: 1, y: 1, dir: 1 } },
+            18: { grid: [[1, 1, 1, 1, 1, 1], [1, 0, 0, 0, 0, 0], [1, 0, 2, 1, 0, 0], [1, 0, 0, 1, 0, 0], [1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0]], start: { x: 5, y: 0, dir: 3 } },
+            19: { grid: [[1, 1, 1, 1, 1, 1], [1, 0, 0, 0, 0, 1], [1, 0, 0, 2, 0, 1], [1, 1, 1, 1, 0, 1], [0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 1, 1]], start: { x: 1, y: 5, dir: 1 } },
+            20: { grid: [[0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 1, 0], [1, 1, 1, 0, 1, 0], [0, 0, 1, 1, 1, 0], [0, 0, 1, 1, 2, 0], [0, 0, 0, 0, 0, 0]], start: { x: 0, y: 2, dir: 1 } },
+        };
+
+        let player = { x: 0, y: 0, dir: 0 };
+        const catImages = { 0: new Image(), 1: new Image(), 2: new Image(), 3: new Image() };
+        catImages[0].src = 'back2.png?v=4'; catImages[1].src = 'right2.png?v=4'; catImages[2].src = 'front2.png?v=4'; catImages[3].src = 'left2.png?v=4';
+
+        let catImagesLoaded = 0;
+        Object.values(catImages).forEach(img => {
+            img.onload = () => { catImagesLoaded++; if (catImagesLoaded === 4) drawMaze(); };
+            img.onerror = () => { catImagesLoaded++; if (catImagesLoaded === 4) drawMaze(); };
+        });
+
+        function initStage(id) {
+            state.stageId = Math.max(1, Math.min(id, 20));
+            state.actionHistory = [];
+            codeArea.innerHTML = '';
+            resetSlam();
+            document.getElementById('stage-text').innerText = `Stage ${state.stageId} / 20`;
+            resetPlayer();
+        }
+
+        function resetPlayer() { player = { ...STAGES[state.stageId].start }; drawMaze(); }
+
+        function drawMaze() {
+            const rect = mazeOuter.getBoundingClientRect();
+            ctx.clearRect(0, 0, rect.width, rect.height);
+            const offsetX = (rect.width - GRID_SIZE * TILE_SIZE) / 2;
+            const offsetY = (rect.height - GRID_SIZE * TILE_SIZE) / 2;
+            const grid = STAGES[state.stageId].grid;
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = grid[y][x];
+                    const px = offsetX + x * TILE_SIZE, py = offsetY + y * TILE_SIZE;
+                    if (cell === 1 || cell === 2) {
+                        ctx.beginPath();
+                        ctx.roundRect(px + TILE_SIZE * 0.1, py + TILE_SIZE * 0.1, TILE_SIZE * 0.8, TILE_SIZE * 0.8, TILE_SIZE * 0.2);
+                        ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
+                        ctx.fill();
+                        if (cell === 1) { ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill(); }
+                    }
+                }
+            }
+            const cx = offsetX + player.x * TILE_SIZE + TILE_SIZE / 2;
+            const cy = offsetY + player.y * TILE_SIZE + TILE_SIZE / 2;
+            const catImg = catImages[player.dir];
+            if (catImg && catImg.complete && catImg.naturalWidth > 0) {
+                const ratio = catImg.naturalWidth / catImg.naturalHeight;
+                const drawW = TILE_SIZE * 0.9;
+                const drawH = drawW / ratio;
+                // 이미지의 하단(발)이 타일 세로 길이의 1/4 지점(하단에서 1/4, 즉 75% 지점)에 오도록 조정
+                const drawBottomY = offsetY + player.y * TILE_SIZE + TILE_SIZE * 0.75;
+                ctx.drawImage(catImg, cx - drawW / 2, drawBottomY - drawH, drawW, drawH);
+            }
+        }
+
+        function showModal(title, btnText, action, color) { document.getElementById('modal-title').innerText = title; document.getElementById('modal-title').style.color = color; document.getElementById('modal-btn').innerText = btnText; document.getElementById('modal-btn').setAttribute('onclick', action); document.getElementById('modal-overlay').style.display = 'flex'; }
+        window.retryStage = () => { document.getElementById('modal-overlay').style.display = 'none'; state.actionHistory = []; codeArea.innerHTML = ''; state.attemptId++; resetSlam(); resetPlayer(); logEvent('stage_retry', { stage: state.stageId }); };
+        window.nextStage = () => { document.getElementById('modal-overlay').style.display = 'none'; if (state.stageId < 20) initStage(state.stageId + 1); else alert("축하합니다!"); };
+        window.prevStage = () => initStage(state.stageId - 1);
+        window.nextStageDev = () => initStage(state.stageId + 1);
+
+        const slam = { raised: false, raisedTime: 0, TIMEOUT: 5000 };
+        function resetSlam() { slam.raised = false; slam.raisedTime = 0; }
+
+        function onResults(results) {
+            if (!results.poseLandmarks) return;
+            canvasCtx.save(); canvasCtx.clearRect(0, 0, 640, 480); canvasCtx.drawImage(results.image, 0, 0, 640, 480); drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 }); drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 }); canvasCtx.restore();
+
+            const lm = results.poseLandmarks;
+            const now = Date.now();
+            if (now - state.lastConfirmTime < CONFIRM_COOLDOWN) return;
+
+            const nose = lm[0], ls = lm[11], rs = lm[12], lw = lm[15], rw = lm[16];
+            const lhip = lm[23], rhip = lm[24];
+            const hipY = (lhip.visibility > 0.5 && rhip.visibility > 0.5) ? (lhip.y + rhip.y) / 2 : 0.8;
+            const shoulderY = (ls.y + rs.y) / 2;
+            const getVis = (...l) => l.reduce((a, v) => a + (v.visibility || 0), 0) / l.length;
+
+            const VIS = 0.6;
+            const lwV = lw.visibility || 0, rwV = rw.visibility || 0;
+            const noseV = nose.visibility || 0;
+
+            let detected = null;
+
+            // 1. ❌ X 동작
+            const xDist = Math.abs(lw.x - rw.x);
+            const xMid = (lw.x + rw.x) / 2;
+            const bodyMid = (ls.x + rs.x) / 2;
+            if (lwV > VIS && rwV > VIS && xDist < 0.18 && Math.abs(xMid - bodyMid) < 0.2 && lw.y > shoulderY + 0.05 && lw.y < hipY && rw.y > shoulderY + 0.05 && rw.y < hipY) {
+                detected = { type: 'delete_one', name: '직전 블록 삭제', icon: '❌', instruction: '✖️ 팔 X자 교차 3초 유지!' };
+            }
+
+            // 2. 👇 Slam-down
+            if (!detected && lwV > VIS && rwV > VIS) {
+                if (slam.raised && now - slam.raisedTime > slam.TIMEOUT) resetSlam();
+                if (noseV > VIS && lw.y < nose.y - 0.05 && rw.y < nose.y - 0.05) { if (!slam.raised) { slam.raised = true; slam.raisedTime = now; logEvent('slam_raised'); } }
+                if (slam.raised && (lw.y > hipY - 0.1 || lw.y > 0.85) && (rw.y > hipY - 0.1 || rw.y > 0.85)) {
+                    detected = { type: 'delete_all', name: '전체 삭제', icon: '👇', instruction: '👇 그대로 3초 유지!' };
+                }
+            }
+
+            // 3. ⬆️ 앞으로 나란히
+            if (!detected && lwV > VIS && rwV > VIS && Math.abs(lw.y - ls.y) < 0.15 && Math.abs(rw.y - rs.y) < 0.15 && lw.z < ls.z - 0.1 && rw.z < rs.z - 0.1) {
+                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙆 앞으로 나란히 2초' };
+            }
+
+            // 4. 회전 동작들...
+            if (!detected && rwV > VIS && Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔 옆으로 2초' };
+            if (!detected && lwV > VIS && Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔 옆으로 2초' };
+
+            if (detected) {
+                const confidence = getVis(lw, rw, nose);
+                const duration = getHoldDuration(detected.type);
+                if (state.currentMotion !== detected.type) {
+                    setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, confidence);
+                } else {
+                    const elapsed = now - state.motionHoldStart;
+                    updateGauge(Math.min(elapsed / duration, 1), (detected.type.includes('delete') ? detected.type.replace('_', '-') : 'move'));
+                    if (elapsed >= duration) confirmBlock();
+                }
+            } else {
+                if (state.currentMotion === 'delete_all' || state.currentMotion === 'delete_one') {
+                    const elapsedSinceStart = now - state.motionHoldStart;
+                    const duration = 3000;
+                    if (elapsedSinceStart < duration + 500) {
+                        updateGauge(Math.min(elapsedSinceStart / duration, 1), state.currentMotion.replace('_', '-'));
+                        if (elapsedSinceStart >= duration) confirmBlock();
+                        return;
+                    }
+                }
+                if (state.currentMotion !== null) clearSuggestion();
+            }
+        }
+
+        initLogger(); initStage(1);
+        const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
+        pose.setOptions({ modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        pose.onResults(onResults);
+        const camera = new Camera(videoElement, { onFrame: async () => { await pose.send({ image: videoElement }); }, width: 640, height: 480 });
+        camera.start();
+    </script>
+</body>
+
+</html>

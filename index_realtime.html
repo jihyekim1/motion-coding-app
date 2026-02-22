@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모션 코딩: 미로 탈출</title>
+    <title>모션 코딩: 미로 탈출 (즉시 실행)</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -13,7 +13,7 @@
             margin: 0;
             padding: 5px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at center, #2e1a47 0%, #1a0b2e 100%);
+            background: radial-gradient(circle at center, #1a2e1a 0%, #0b1a0b 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -26,11 +26,23 @@
         h1 {
             font-size: 1.5rem;
             margin: 5px 0 10px 0;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+            text-shadow: 0 0 20px rgba(43, 226, 100, 0.8);
             flex-shrink: 0;
         }
 
-        /* Layout Containers */
+        /* 즉시 실행 버전 배지 */
+        .version-badge {
+            display: inline-block;
+            background: #2e7d32;
+            color: #a5d6a7;
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+            vertical-align: middle;
+            border: 1px solid #43a047;
+        }
+
         #main-layout {
             display: flex;
             flex-direction: row;
@@ -66,17 +78,16 @@
             overflow: hidden;
         }
 
-        /* Left Panel Components */
         #video-container {
             position: relative;
             width: 640px;
             height: 480px;
-            border: 4px solid #5e35b1;
+            border: 4px solid #2e7d32;
             border-radius: 20px;
             overflow: hidden;
             background: #000;
             flex-shrink: 0;
-            box-shadow: 0 0 30px rgba(94, 53, 177, 0.6);
+            box-shadow: 0 0 30px rgba(46, 125, 50, 0.6);
             align-self: center;
         }
 
@@ -96,7 +107,6 @@
             transform: scaleX(-1);
         }
 
-        /* suggestion-box: 게이지 바 + 내용을 가로로 나란히 배치 */
         #suggestion-box {
             position: absolute;
             bottom: 25px;
@@ -105,9 +115,9 @@
             width: fit-content;
             min-width: 280px;
             max-width: 80%;
-            background: rgba(15, 5, 25, 0.9);
+            background: rgba(5, 25, 5, 0.9);
             border-radius: 18px;
-            border: 2px solid #b39ddb;
+            border: 2px solid #81c784;
             padding: 10px 25px 10px 16px;
             display: flex;
             flex-direction: row;
@@ -123,8 +133,8 @@
         }
 
         #suggestion-box.active {
-            background: rgba(81, 45, 168, 0.95);
-            box-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+            background: rgba(27, 94, 32, 0.95);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
             border-color: #fff;
             transform: translateX(-50%) scale(1.02);
         }
@@ -139,7 +149,7 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* 아래→위로 채워지도록 */
+            justify-content: flex-end;
         }
 
         #gauge-fill {
@@ -150,7 +160,6 @@
             transition: height 0.1s linear, background 0.1s linear;
         }
 
-        /* 내용 영역 */
         #suggestion-inner {
             display: flex;
             flex-direction: column;
@@ -158,25 +167,14 @@
             justify-content: center;
         }
 
-        .suggestion-icon {
-            font-size: 44px;
-            margin-bottom: 2px;
-        }
+        .suggestion-icon { font-size: 44px; margin-bottom: 2px; }
+        .suggestion-name, .suggestion-desc { display: none; }
+        .suggestion-placeholder { display: none; }
 
-        .suggestion-name,
-        .suggestion-desc {
-            display: none;
-        }
-
-        .suggestion-placeholder {
-            display: none;
-        }
-
-        /* Action Guide Styles */
         #action-guide {
-            background: rgba(30, 20, 50, 0.7);
+            background: rgba(20, 30, 20, 0.7);
             border-radius: 15px;
-            border: 1px solid #5e35b1;
+            border: 1px solid #2e7d32;
             padding: 15px;
             margin-top: 15px;
             display: flex;
@@ -191,15 +189,8 @@
             font-size: 16px;
         }
 
-        .guide-icon {
-            font-size: 24px;
-            width: 40px;
-            text-align: center;
-        }
-
-        .guide-text {
-            color: #d1c4e9;
-        }
+        .guide-icon { font-size: 24px; width: 40px; text-align: center; }
+        .guide-text { color: #c8e6c9; }
 
         #stage-info {
             height: 56px;
@@ -209,15 +200,15 @@
             gap: 20px;
             font-size: 24px;
             font-weight: bold;
-            color: #d1c4e9;
-            text-shadow: 0 0 10px #7e57c2;
+            color: #c8e6c9;
+            text-shadow: 0 0 10px #43a047;
             flex-shrink: 0;
         }
 
         .nav-btn {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #7e57c2;
-            color: #d1c4e9;
+            border: 1px solid #43a047;
+            color: #c8e6c9;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -230,7 +221,7 @@
         }
 
         .nav-btn:hover {
-            background: rgba(126, 87, 194, 0.5);
+            background: rgba(67, 160, 71, 0.5);
             transform: scale(1.1);
         }
 
@@ -238,19 +229,16 @@
             flex: 1;
             min-height: 0;
             position: relative;
-            background: rgba(30, 20, 50, 0.7);
+            background: rgba(20, 30, 20, 0.7);
             border-radius: 20px;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.2);
-            border: 2px solid #5e35b1;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5), 0 0 20px rgba(76, 175, 80, 0.2);
+            border: 2px solid #2e7d32;
             overflow: hidden;
         }
 
-        #maze-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        #maze-canvas { width: 100%; height: 100%; display: block; }
 
+        /* 히스토리 영역 (코드 블록 표시, 삭제 불가) */
         .code-area-wrapper {
             height: 140px;
             flex-shrink: 0;
@@ -263,7 +251,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #512da8;
+            border: 2px solid #1b5e20;
             border-radius: 15px;
             padding: 10px;
             display: flex;
@@ -275,7 +263,7 @@
         }
 
         .code-block {
-            background: #5e35b1;
+            background: #2e7d32;
             color: white;
             padding: 6px 12px;
             border-radius: 8px;
@@ -283,59 +271,66 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: default; /* 삭제 불가이므로 기본 커서 */
+        }
+
+        /* 가장 최근 블록 강조 */
+        .code-block.latest {
+            background: #43a047;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
         }
 
         @keyframes popIn {
-            from {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.5); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
         }
 
-        .code-block:hover {
-            background: #ef5350;
-            transform: translateY(-2px);
+        /* 리셋 버튼 */
+        #btn-reset {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            flex: 1;
         }
 
-        .code-block.execute {
-            background: #c2185b;
-        }
+        #btn-reset:hover { background: #b71c1c; transform: scale(1.05); }
 
         #btn-download {
             background: #28a745;
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 10px 25px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             transition: all 0.2s;
-            margin: 15px 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            align-self: center;
-            width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            flex: 1;
         }
 
-        #btn-download:hover {
-            background: #218838;
-            transform: scale(1.05);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        #btn-download:hover { background: #218838; transform: scale(1.05); }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
         }
 
         #console-log {
             height: 160px;
             width: 100%;
             flex-shrink: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             color: #0f0;
             font-family: 'Consolas', monospace;
             padding: 8px;
@@ -347,12 +342,9 @@
         }
 
         #modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
             display: none;
             justify-content: center;
             align-items: center;
@@ -360,18 +352,18 @@
         }
 
         #modal-content {
-            background: #2e1a47;
+            background: #1a2e1a;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
-            border: 4px solid #7e57c2;
-            box-shadow: 0 0 50px rgba(126, 87, 194, 0.5);
+            border: 4px solid #43a047;
+            box-shadow: 0 0 50px rgba(76, 175, 80, 0.5);
         }
     </style>
 </head>
 
 <body>
-    <h1>모션 코딩: 미로 탈출</h1>
+    <h1>모션 코딩: 미로 탈출 <span class="version-badge">⚡ 즉시 실행</span></h1>
 
     <div id="main-layout">
         <div id="left-panel">
@@ -379,11 +371,9 @@
                 <video id="input-video" class="input_video"></video>
                 <canvas class="output_canvas" width="640" height="480"></canvas>
                 <div id="suggestion-box">
-                    <!-- 세로 게이지 바 (왼쪽) -->
                     <div id="gauge-track">
                         <div id="gauge-fill"></div>
                     </div>
-                    <!-- 내용 영역 (오른쪽) -->
                     <div id="suggestion-inner">
                         <div id="suggestion-content" style="display: none;">
                             <div id="suggestion-icon" class="suggestion-icon"></div>
@@ -410,21 +400,16 @@
                     <span class="guide-icon">↪️</span>
                     <span class="guide-text"><strong>오른팔 옆으로</strong> : 오른쪽 회전</span>
                 </div>
-                <div class="guide-item">
-                    <span class="guide-icon">▶️</span>
-                    <span class="guide-text"><strong>만세 (양손 위로)</strong> : 실행하기</span>
-                </div>
                 <div class="guide-item"
                     style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px;">
                     <span class="guide-icon">⏱️</span>
-                    <span class="guide-text" style="color: #b39ddb;"><strong>3초 유지</strong>하면 블록이 자동으로 추가됩니다</span>
-                </div>
-                <div class="guide-item">
-                    <span class="guide-icon">🗑️</span>
-                    <span class="guide-text" style="color: #ef5350;"><strong>삭제</strong> : 삭제를 원하는 블록 클릭하기</span>
+                    <span class="guide-text" style="color: #a5d6a7;"><strong>2초 유지</strong>하면 고양이가 즉시 움직입니다</span>
                 </div>
             </div>
-            <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
+            <div class="btn-row">
+                <button id="btn-reset" onclick="retryStage()">↺ 다시 시작</button>
+                <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
+            </div>
         </div>
         <div id="right-panel">
             <div id="stage-info">
@@ -444,11 +429,9 @@
 
     <div id="modal-overlay">
         <div id="modal-content">
-            <div id="modal-title" style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: #ffd700;">스테이지
-                클리어!</div>
+            <div id="modal-title" style="font-size: 32px; font-weight: bold; margin-bottom: 20px; color: #ffd700;">스테이지 클리어!</div>
             <button id="modal-btn" onclick="nextStage()"
-                style="padding: 15px 40px; font-size: 24px; background: #00acc1; color: white; border: none; border-radius: 10px; cursor: pointer;">다음
-                스테이지로</button>
+                style="padding: 15px 40px; font-size: 24px; background: #00acc1; color: white; border: none; border-radius: 10px; cursor: pointer;">다음 스테이지로</button>
         </div>
     </div>
 
@@ -456,16 +439,16 @@
         const videoElement = document.getElementsByClassName('input_video')[0];
         const canvasElement = document.getElementsByClassName('output_canvas')[0];
         const canvasCtx = canvasElement.getContext('2d');
-        const suggestionBox = document.getElementById('suggestion-box');
+        const suggestionBox   = document.getElementById('suggestion-box');
         const suggestionContent = document.getElementById('suggestion-content');
         const suggestionPlaceholder = document.getElementById('suggestion-placeholder');
         const suggestionIcon_El = document.getElementById('suggestion-icon');
-        const suggestionText = document.getElementById('suggestion-text');
-        const suggestionInst = document.getElementById('suggestion-instruction');
-        const gaugeFill = document.getElementById('gauge-fill');
+        const suggestionText  = document.getElementById('suggestion-text');
+        const suggestionInst  = document.getElementById('suggestion-instruction');
+        const gaugeFill       = document.getElementById('gauge-fill');
 
-        const HOLD_DURATION = 3000; // 3초 (ms)
-        const CONFIRM_COOLDOWN = 1000; // 확정 후 쿨다운 (ms)
+        const HOLD_DURATION   = 2000; // 2초
+        const CONFIRM_COOLDOWN = 1000; // 확정 후 쿨다운
 
         const state = {
             participantId: null,
@@ -473,14 +456,15 @@
             stageId: 1,
             attemptId: 0,
             logs: [],
-            codeBlocks: [],
-            isExecuting: false,
-            currentMotion: null,      // 현재 표시 중인 동작 type
-            suggestedBlock: null,     // 현재 제안된 블록 정보
-            motionHoldStart: null,    // 동작 유지 시작 시각
-            lastConfirmTime: 0,       // 마지막 확정 시각 (쿨다운용)
+            actionHistory: [],      // 실행 히스토리 (표시용)
+            isMoving: false,        // 고양이 이동 중 (중복 방지)
+            currentMotion: null,
+            suggestedBlock: null,
+            motionHoldStart: null,
+            lastConfirmTime: 0,
         };
 
+        // ── Logger ──────────────────────────────────────────────────
         function initLogger() {
             let pid = localStorage.getItem('participant_id') || crypto.randomUUID();
             localStorage.setItem('participant_id', pid);
@@ -490,16 +474,14 @@
 
         function logEvent(type, data = {}) {
             const now = new Date();
-            const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(now.getMilliseconds()).padStart(3, '0')}`;
-            if (data.confidence !== undefined) {
-                data.confidence = Number(Number(data.confidence).toFixed(2));
-            }
-            const entry = { participant_id: state.participantId, session_id: state.sessionId, stage_id: state.stageId, attempt_id: state.attemptId, timestamp, event_type: type, ...data };
+            const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+            if (data.confidence !== undefined) data.confidence = Number(Number(data.confidence).toFixed(2));
+            const entry = { participant_id: state.participantId, session_id: state.sessionId, stage_id: state.stageId, attempt_id: state.attemptId, timestamp: ts, event_type: type, ...data };
             state.logs.push(entry);
             const logDiv = document.getElementById('console-log');
-            const logLine = document.createElement('div');
-            logLine.innerText = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}] ${type}: ${JSON.stringify(data)}`;
-            logDiv.appendChild(logLine);
+            const line = document.createElement('div');
+            line.innerText = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}] ${type}: ${JSON.stringify(data)}`;
+            logDiv.appendChild(line);
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -507,21 +489,18 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.logs, null, 2));
             const dl = document.createElement('a');
             dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `motion_coding_log_${state.sessionId}.json`);
+            dl.setAttribute("download", `motion_coding_realtime_log_${state.sessionId}.json`);
             dl.click();
         };
 
-        // ── 게이지 업데이트 ──────────────────────────────────────────
+        // ── 게이지 ──────────────────────────────────────────────────
         function updateGauge(ratio) {
-            // ratio: 0.0 ~ 1.0
             const pct = Math.min(1, Math.max(0, ratio)) * 100;
             gaugeFill.style.height = pct + '%';
-
-            // 흰색(0%) → 보라색(100%) 선형 보간
-            // white: rgb(255,255,255)  purple: rgb(138,43,226)
-            const r = Math.round(255 - (255 - 138) * ratio);
-            const g = Math.round(255 - (255 - 43)  * ratio);
-            const b = Math.round(255 - (255 - 226) * ratio);
+            // 흰색 → 초록색(즉시 실행 버전 색상)
+            const r = Math.round(255 - (255 - 76)  * ratio);
+            const g = Math.round(255 - (255 - 175) * ratio);
+            const b = Math.round(255 - (255 - 80)  * ratio);
             gaugeFill.style.background = `rgb(${r},${g},${b})`;
         }
 
@@ -532,12 +511,10 @@
 
         // ── Suggestion 박스 ──────────────────────────────────────────
         function setSuggestion(type, name, icon, instruction, confidence = null) {
-            if (state.currentMotion === type) return; // 같은 동작이면 무시 (hold 타이머는 유지)
-
+            if (state.currentMotion === type) return;
             state.currentMotion = type;
             state.motionHoldStart = type ? Date.now() : null;
             resetGauge();
-
             if (type) {
                 state.suggestedBlock = { type, name, icon, confidence };
                 suggestionBox.classList.add('active');
@@ -566,25 +543,69 @@
             suggestionPlaceholder.style.display = 'block';
         }
 
-        // ── 블록 확정 ────────────────────────────────────────────────
+        // ── 히스토리 UI ──────────────────────────────────────────────
+        function addHistoryBlock(icon, name) {
+            const area = document.getElementById('code-area');
+            // 이전 latest 강조 제거
+            const prev = area.querySelector('.latest');
+            if (prev) prev.classList.remove('latest');
+
+            const el = document.createElement('div');
+            el.className = 'code-block latest';
+            el.innerHTML = `<span>${icon}</span> ${name}`;
+            area.appendChild(el);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // ── 즉시 동작 실행 ───────────────────────────────────────────
+        function applyAction(type) {
+            const dx = [0, 1, 0, -1], dy = [-1, 0, 1, 0];
+            if (type === 'move_forward') {
+                const nx = player.x + dx[player.dir];
+                const ny = player.y + dy[player.dir];
+                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && STAGES[state.stageId].grid[ny][nx] !== 0) {
+                    player.x = nx; player.y = ny;
+                    logEvent('action_move_success', { x: nx, y: ny });
+                } else {
+                    logEvent('action_move_fail', { x: nx, y: ny });
+                }
+            } else if (type === 'turn_left') {
+                player.dir = (player.dir + 3) % 4;
+                logEvent('action_turn', { dir: 'left', result_dir: player.dir });
+            } else if (type === 'turn_right') {
+                player.dir = (player.dir + 1) % 4;
+                logEvent('action_turn', { dir: 'right', result_dir: player.dir });
+            }
+            drawMaze();
+        }
+
+        // ── 블록 확정 → 즉시 실행 ────────────────────────────────────
         function confirmBlock() {
-            if (!state.suggestedBlock || state.isExecuting) return;
+            if (!state.suggestedBlock || state.isMoving) return;
             const { type, name, icon, confidence } = state.suggestedBlock;
             state.lastConfirmTime = Date.now();
+            state.attemptId++;
 
-            if (type === 'execute') {
-                logEvent('block_confirmed', { type, confidence });
-                executeCode();
-            } else {
-                state.codeBlocks.push({ type, name, icon });
-                updateCodeUI();
-                logEvent('block_confirmed', { type, confidence });
+            logEvent('block_confirmed', { type, confidence });
+
+            // 히스토리에 추가
+            state.actionHistory.push({ type, name, icon });
+            addHistoryBlock(icon, name);
+
+            // 즉시 이동
+            state.isMoving = true;
+            applyAction(type);
+            state.isMoving = false;
+
+            // 클리어 체크
+            if (STAGES[state.stageId].grid[player.y][player.x] === 2) {
+                logEvent('stage_clear', { stage: state.stageId });
+                setTimeout(() => showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700"), 400);
             }
 
-            // 확정 후 게이지 및 상태 리셋
+            // 확정 후 리셋
             resetGauge();
             state.motionHoldStart = null;
-            // currentMotion은 유지하지 않음 → 다음 프레임에서 같은 동작이 오면 새로 시작
             state.currentMotion = null;
             state.suggestedBlock = null;
             suggestionBox.classList.remove('active');
@@ -594,15 +615,15 @@
 
         // ── 미로 관련 ────────────────────────────────────────────────
         const mazeCanvas = document.getElementById('maze-canvas');
-        const mazeOuter = document.getElementById('maze-outer');
-        const ctx = mazeCanvas.getContext('2d');
-        const GRID_SIZE = 6;
-        let TILE_SIZE = 60;
+        const mazeOuter  = document.getElementById('maze-outer');
+        const ctx        = mazeCanvas.getContext('2d');
+        const GRID_SIZE  = 6;
+        let TILE_SIZE    = 60;
 
         function resizeCanvas() {
             const rect = mazeOuter.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
-            mazeCanvas.width = rect.width * dpr;
+            mazeCanvas.width  = rect.width  * dpr;
             mazeCanvas.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
             TILE_SIZE = Math.min(rect.width, rect.height) / GRID_SIZE;
@@ -613,26 +634,26 @@
         setTimeout(resizeCanvas, 100);
 
         const STAGES = {
-            1: { grid: [[0,2,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:3, dir:0 } },
-            2: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,1,1,1,2,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:2, dir:1 } },
-            3: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,0,0,0,0]], start: { x:2, y:4, dir:0 } },
-            4: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[1,1,1,1,2,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:0, y:3, dir:1 } },
-            5: { grid: [[0,0,0,0,0,0],[0,1,1,2,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:3, dir:0 } },
-            6: { grid: [[0,0,0,0,0,0],[0,2,1,1,0,0],[0,0,0,1,0,0],[0,0,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:3, y:3, dir:0 } },
-            7: { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:4, dir:0 } },
-            8: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: { x:4, y:4, dir:0 } },
-            9: { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:4, dir:1 } },
-            10: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: { x:4, y:4, dir:3 } },
-            11: { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: { x:1, y:4, dir:3 } },
-            12: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: { x:4, y:4, dir:1 } },
-            13: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,1,1,1,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,1,0,2,0,0]], start: { x:1, y:5, dir:0 } },
-            14: { grid: [[0,1,1,2,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0]], start: { x:1, y:5, dir:0 } },
-            15: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[1,1,1,1,1,2],[1,0,0,0,0,0],[0,0,0,0,0,0]], start: { x:0, y:4, dir:0 } },
-            16: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[2,1,1,1,1,0],[0,0,0,0,1,0],[1,1,1,1,1,0],[0,0,0,0,0,0]], start: { x:0, y:4, dir:0 } },
-            17: { grid: [[0,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,1,0],[0,1,1,1,1,0],[0,1,0,0,0,0],[0,1,1,2,0,0]], start: { x:1, y:1, dir:1 } },
-            18: { grid: [[1,1,1,1,1,1],[1,0,0,0,0,0],[1,0,2,1,0,0],[1,0,0,1,0,0],[1,1,1,1,0,0],[0,0,0,0,0,0]], start: { x:5, y:0, dir:3 } },
-            19: { grid: [[1,1,1,1,1,1],[1,0,0,0,0,1],[1,0,0,2,0,1],[1,1,1,1,0,1],[0,0,0,0,0,1],[0,1,1,1,1,1]], start: { x:1, y:5, dir:1 } },
-            20: { grid: [[0,0,0,0,0,0],[0,0,1,1,1,0],[1,1,1,0,1,0],[0,0,1,1,1,0],[0,0,1,1,2,0],[0,0,0,0,0,0]], start: { x:0, y:2, dir:1 } },
+            1:  { grid: [[0,2,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:3,dir:0} },
+            2:  { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,1,1,1,2,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:2,dir:1} },
+            3:  { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,1,0,0,0],[0,0,0,0,0,0]], start: {x:2,y:4,dir:0} },
+            4:  { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[1,1,1,1,2,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:0,y:3,dir:1} },
+            5:  { grid: [[0,0,0,0,0,0],[0,1,1,2,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:3,dir:0} },
+            6:  { grid: [[0,0,0,0,0,0],[0,2,1,1,0,0],[0,0,0,1,0,0],[0,0,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:3,y:3,dir:0} },
+            7:  { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:4,dir:0} },
+            8:  { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: {x:4,y:4,dir:0} },
+            9:  { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:4,dir:1} },
+            10: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: {x:4,y:4,dir:3} },
+            11: { grid: [[0,0,0,2,0,0],[0,0,0,1,0,0],[0,1,1,1,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0]], start: {x:1,y:4,dir:3} },
+            12: { grid: [[0,0,2,0,0,0],[0,0,1,0,0,0],[0,0,1,1,1,0],[0,0,0,0,1,0],[0,0,0,0,1,0],[0,0,0,0,0,0]], start: {x:4,y:4,dir:1} },
+            13: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,1,1,1,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,1,0,2,0,0]], start: {x:1,y:5,dir:0} },
+            14: { grid: [[0,1,1,2,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0],[0,1,0,0,0,0]], start: {x:1,y:5,dir:0} },
+            15: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[1,1,1,1,1,2],[1,0,0,0,0,0],[0,0,0,0,0,0]], start: {x:0,y:4,dir:0} },
+            16: { grid: [[0,0,0,0,0,0],[0,0,0,0,0,0],[2,1,1,1,1,0],[0,0,0,0,1,0],[1,1,1,1,1,0],[0,0,0,0,0,0]], start: {x:0,y:4,dir:0} },
+            17: { grid: [[0,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,1,0],[0,1,1,1,1,0],[0,1,0,0,0,0],[0,1,1,2,0,0]], start: {x:1,y:1,dir:1} },
+            18: { grid: [[1,1,1,1,1,1],[1,0,0,0,0,0],[1,0,2,1,0,0],[1,0,0,1,0,0],[1,1,1,1,0,0],[0,0,0,0,0,0]], start: {x:5,y:0,dir:3} },
+            19: { grid: [[1,1,1,1,1,1],[1,0,0,0,0,1],[1,0,0,2,0,1],[1,1,1,1,0,1],[0,0,0,0,0,1],[0,1,1,1,1,1]], start: {x:1,y:5,dir:1} },
+            20: { grid: [[0,0,0,0,0,0],[0,0,1,1,1,0],[1,1,1,0,1,0],[0,0,1,1,1,0],[0,0,1,1,2,0],[0,0,0,0,0,0]], start: {x:0,y:2,dir:1} },
         };
 
         let player = { x: 0, y: 0, dir: 0 };
@@ -642,6 +663,8 @@
 
         function initStage(id) {
             state.stageId = Math.max(1, Math.min(id, 20));
+            state.actionHistory = [];
+            document.getElementById('code-area').innerHTML = '';
             document.getElementById('stage-text').innerText = `Stage ${state.stageId} / 20`;
             resetPlayer();
             if (catImage.complete) drawMaze(); else catImage.onload = drawMaze;
@@ -655,7 +678,7 @@
         function drawMaze() {
             const rect = mazeOuter.getBoundingClientRect();
             ctx.clearRect(0, 0, rect.width, rect.height);
-            const offsetX = (rect.width - GRID_SIZE * TILE_SIZE) / 2;
+            const offsetX = (rect.width  - GRID_SIZE * TILE_SIZE) / 2;
             const offsetY = (rect.height - GRID_SIZE * TILE_SIZE) / 2;
             const grid = STAGES[state.stageId].grid;
             for (let y = 0; y < GRID_SIZE; y++) {
@@ -664,12 +687,12 @@
                     const px = offsetX + x * TILE_SIZE, py = offsetY + y * TILE_SIZE;
                     if (cell === 1 || cell === 2) {
                         ctx.beginPath();
-                        ctx.roundRect(px + TILE_SIZE * 0.1, py + TILE_SIZE * 0.1, TILE_SIZE * 0.8, TILE_SIZE * 0.8, TILE_SIZE * 0.2);
+                        ctx.roundRect(px + TILE_SIZE*0.1, py + TILE_SIZE*0.1, TILE_SIZE*0.8, TILE_SIZE*0.8, TILE_SIZE*0.2);
                         ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
                         ctx.fill();
                         if (cell === 1) {
                             ctx.fillStyle = "rgba(255,255,255,0.2)";
-                            ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill();
+                            ctx.beginPath(); ctx.arc(px + TILE_SIZE*0.4, py + TILE_SIZE*0.4, TILE_SIZE*0.08, 0, Math.PI*2); ctx.fill();
                         }
                     }
                 }
@@ -677,77 +700,35 @@
             const cx = offsetX + player.x * TILE_SIZE + TILE_SIZE / 2;
             const cy = offsetY + player.y * TILE_SIZE + TILE_SIZE / 2;
             ctx.save(); ctx.translate(cx, cy); ctx.rotate(player.dir * 90 * Math.PI / 180);
-            ctx.drawImage(catImage, -TILE_SIZE * 0.4, -TILE_SIZE * 0.4, TILE_SIZE * 0.8, TILE_SIZE * 0.8);
+            ctx.drawImage(catImage, -TILE_SIZE*0.4, -TILE_SIZE*0.4, TILE_SIZE*0.8, TILE_SIZE*0.8);
             ctx.restore();
         }
 
-        async function executeCode() {
-            if (state.isExecuting) return;
-            state.isExecuting = true; state.attemptId++;
-            logEvent('execution_attempt', { stage: state.stageId, blocks: state.codeBlocks });
-            resetPlayer(); await new Promise(r => setTimeout(r, 500));
-            for (const block of state.codeBlocks) {
-                await new Promise(r => setTimeout(r, 600));
-                if (block.type === 'move_forward') {
-                    const dx = [0, 1, 0, -1], dy = [-1, 0, 1, 0];
-                    const nx = player.x + dx[player.dir], ny = player.y + dy[player.dir];
-                    if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && STAGES[state.stageId].grid[ny][nx] !== 0) {
-                        player.x = nx; player.y = ny; logEvent('action_move_success', { x: nx, y: ny });
-                    } else logEvent('action_move_fail', { x: nx, y: ny });
-                } else if (block.type === 'turn_left') player.dir = (player.dir + 3) % 4;
-                else if (block.type === 'turn_right') player.dir = (player.dir + 1) % 4;
-                drawMaze();
-            }
-            if (STAGES[state.stageId].grid[player.y][player.x] === 2) {
-                logEvent('execution_success'); setTimeout(() => showModal("스테이지 클리어! 🎉", "다음 스테이지로", "nextStage()", "#ffd700"), 500);
-            } else {
-                logEvent('execution_fail'); setTimeout(() => showModal("실패... 😢", "다시 시도하기", "retryStage()", "#ff4444"), 500);
-                state.isExecuting = false;
-            }
-        }
-
         function showModal(title, btnText, action, color) {
-            const overlay = document.getElementById('modal-overlay');
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-title').style.color = color;
             document.getElementById('modal-btn').innerText = btnText;
             document.getElementById('modal-btn').setAttribute('onclick', action);
-            overlay.style.display = 'flex';
+            document.getElementById('modal-overlay').style.display = 'flex';
         }
 
-        window.retryStage = () => { document.getElementById('modal-overlay').style.display = 'none'; state.isExecuting = false; resetPlayer(); };
-        window.nextStage = () => {
-            document.getElementById('modal-overlay').style.display = 'none'; state.isExecuting = false; state.codeBlocks = []; updateCodeUI();
-            if (state.stageId < 20) initStage(state.stageId + 1); else { alert("축하합니다!"); logEvent('session_end'); }
+        window.retryStage = () => {
+            document.getElementById('modal-overlay').style.display = 'none';
+            state.actionHistory = [];
+            document.getElementById('code-area').innerHTML = '';
+            state.attemptId++;
+            resetPlayer();
+            logEvent('stage_retry', { stage: state.stageId });
         };
-        window.prevStage = () => initStage(state.stageId - 1);
-        window.nextStageDev = () => initStage(state.stageId + 1);
 
-        function updateCodeUI() {
-            const area = document.getElementById('code-area');
-            const currentCount = area.children.length;
-            const targetCount = state.codeBlocks.length;
-            if (targetCount > currentCount) {
-                for (let i = currentCount; i < targetCount; i++) {
-                    const block = state.codeBlocks[i];
-                    const el = document.createElement('div');
-                    el.className = `code-block ${block.type}`;
-                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                    const idx = i;
-                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(idx, 1); updateCodeUI(); } };
-                    area.appendChild(el);
-                }
-            } else {
-                area.innerHTML = '';
-                state.codeBlocks.forEach((block, index) => {
-                    const el = document.createElement('div');
-                    el.className = `code-block ${block.type}`;
-                    el.innerHTML = `<span>${block.icon}</span> ${block.name}`;
-                    el.onclick = () => { if (!state.isExecuting) { state.codeBlocks.splice(index, 1); updateCodeUI(); } };
-                    area.appendChild(el);
-                });
-            }
-        }
+        window.nextStage = () => {
+            document.getElementById('modal-overlay').style.display = 'none';
+            if (state.stageId < 20) initStage(state.stageId + 1);
+            else { alert("축하합니다! 모든 스테이지를 클리어했습니다! 🎉"); logEvent('session_end'); }
+        };
+
+        window.prevStage    = () => initStage(state.stageId - 1);
+        window.nextStageDev = () => initStage(state.stageId + 1);
 
         // ── MediaPipe onResults ──────────────────────────────────────
         function onResults(results) {
@@ -759,10 +740,9 @@
             drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
             canvasCtx.restore();
 
-            const lm = results.poseLandmarks;
+            const lm  = results.poseLandmarks;
             const now = Date.now();
 
-            // 쿨다운 중이면 동작 감지 건너뜀
             if (now - state.lastConfirmTime < CONFIRM_COOLDOWN) return;
 
             const nose = lm[0], ls = lm[11], rs = lm[12], lw = lm[15], rw = lm[16];
@@ -775,51 +755,36 @@
             const rwVis = rw.visibility || 0;
             const lsVis = ls.visibility || 0;
             const rsVis = rs.visibility || 0;
-            const noseVis = nose.visibility || 0;
 
-            // 1. 만세: 양손이 코보다 높음 + 양손목 잘 보일 때만
-            if (lwVis > VIS_THRESHOLD && rwVis > VIS_THRESHOLD && noseVis > VIS_THRESHOLD
-                && lw.y < nose.y - 0.1 && rw.y < nose.y - 0.1) {
-                detected = { type: 'execute', name: '실행하기', icon: '▶️', instruction: '🙌 만세!' };
-            }
-            // 2. 앞으로 나란히: 양손목+양어깨 모두 잘 보일 때만
-            else if (lwVis > VIS_THRESHOLD && rwVis > VIS_THRESHOLD && lsVis > VIS_THRESHOLD && rsVis > VIS_THRESHOLD
+            // 1. 앞으로 나란히: 양손목+양어깨 모두 잘 보일 때만
+            if (lwVis > VIS_THRESHOLD && rwVis > VIS_THRESHOLD && lsVis > VIS_THRESHOLD && rsVis > VIS_THRESHOLD
                 && Math.abs(lw.y - ls.y) < 0.15 && Math.abs(rw.y - rs.y) < 0.15
                 && lw.z < ls.z - 0.1 && rw.z < rs.z - 0.1) {
                 detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙆 앞으로 나란히' };
             }
-            // 3. 오른팔 옆으로: 오른손목+오른어깨가 잘 보일 때만
+            // 2. 오른팔 옆으로: 오른손목+오른어깨가 잘 보일 때만
             else if (rwVis > VIS_THRESHOLD && rsVis > VIS_THRESHOLD
                 && Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) {
                 detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔을 옆으로' };
             }
-            // 4. 왼팔 옆으로: 왼손목+왼어깨가 잘 보일 때만
+            // 3. 왼팔 옆으로: 왼손목+왼어깨가 잘 보일 때만
             else if (lwVis > VIS_THRESHOLD && lsVis > VIS_THRESHOLD
                 && Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) {
                 detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔을 옆으로' };
             }
-            // 감지된 동작 없음 → 차렷 / idle → 초기화
-            // (위 4가지 조건에 해당하지 않으면 detected는 null)
+            // (만세 동작 없음 — 즉시 실행 버전은 실행하기 불필요)
 
             if (detected) {
                 const confidence = getVis(lw, rw, nose);
                 if (state.currentMotion !== detected.type) {
-                    // 새 동작 → suggestion 교체 및 홀드 타이머 시작
                     setSuggestion(detected.type, detected.name, detected.icon, detected.instruction, confidence);
                     state.motionHoldStart = now;
                 } else {
-                    // 같은 동작 유지 중 → 게이지 진행
                     const elapsed = now - state.motionHoldStart;
-                    const ratio = Math.min(elapsed / HOLD_DURATION, 1);
-                    updateGauge(ratio);
-
-                    // 3초 달성 → 블록 확정
-                    if (elapsed >= HOLD_DURATION) {
-                        confirmBlock();
-                    }
+                    updateGauge(Math.min(elapsed / HOLD_DURATION, 1));
+                    if (elapsed >= HOLD_DURATION) confirmBlock();
                 }
             } else {
-                // 동작 없음 → 모두 초기화
                 clearSuggestion();
             }
         }
