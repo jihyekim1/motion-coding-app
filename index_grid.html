@@ -217,6 +217,21 @@
             gap: 10px;
         }
 
+        .guide-title {
+            font-size: 14px;
+            color: #81c784;
+            font-weight: bold;
+            margin-bottom: 5px;
+            padding-left: 5px;
+            border-left: 3px solid #43a047;
+        }
+
+        .guide-title.delete {
+            color: #ef9a9a;
+            border-left-color: #ef5350;
+            margin-top: 5px;
+        }
+
         .guide-item {
             display: flex;
             align-items: center;
@@ -461,6 +476,7 @@
                 </div>
             </div>
             <div id="action-guide">
+                <div class="guide-title">이동 블록 (3초 유지)</div>
                 <div class="guide-item">
                     <span class="guide-icon">⬆️</span>
                     <span class="guide-text"><strong>앞으로 1칸 가려면?</strong> : 두 팔을 앞으로 나란히</span>
@@ -473,8 +489,11 @@
                     <span class="guide-icon"><span class="flip-v">↪️</span></span>
                     <span class="guide-text"><strong>오른쪽으로 회전하려면?</strong> : 오른팔을 옆으로</span>
                 </div>
-                <div class="guide-item"
-                    style="border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;margin-top:3px;">
+
+                <div class="guide-title delete"
+                    style="border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;margin-top:5px;">삭제 블록 (2초 유지)
+                </div>
+                <div class="guide-item">
                     <span class="guide-icon">❌</span>
                     <span class="guide-text" style="color:#ef9a9a;"><strong>블록을 삭제하려면?</strong> : 몸통앞에서 팔을 X자로</span>
                 </div>
@@ -526,8 +545,8 @@
         const gaugeFill = document.getElementById('gauge-fill');
         const codeArea = document.getElementById('code-area');
 
-        const HOLD_MOVE = 2000;   // 이동: 2초
-        const HOLD_DELETE = 3000; // 삭제: 3초
+        const HOLD_MOVE = 3000;   // 이동: 3초
+        const HOLD_DELETE = 2000; // 삭제: 2초
         const CONFIRM_COOLDOWN = 1000; // 확정 후 쿨다운
 
         function getHoldDuration(type) {
@@ -1129,7 +1148,7 @@
             const xMid = (lw.x + rw.x) / 2;
             const bodyMid = (ls.x + rs.x) / 2;
             if (lwV > VIS && rwV > VIS && xDist < 0.18 && Math.abs(xMid - bodyMid) < 0.2 && lw.y > shoulderY + 0.05 && lw.y < hipY && rw.y > shoulderY + 0.05 && rw.y < hipY) {
-                detected = { type: 'delete_one', name: '직전 블록 삭제', icon: '❌', instruction: '✖️ 팔 X자 교차 3초 유지!' };
+                detected = { type: 'delete_one', name: '직전 블록 삭제', icon: '❌', instruction: '✖️ 팔 X자 교차 2초 유지!' };
             }
 
             // 2. 👇 Slam-down
@@ -1137,18 +1156,18 @@
                 if (slam.raised && now - slam.raisedTime > slam.TIMEOUT) resetSlam();
                 if (noseV > VIS && lw.y < nose.y - 0.05 && rw.y < nose.y - 0.05) { if (!slam.raised) { slam.raised = true; slam.raisedTime = now; logEvent('slam_raised'); } }
                 if (slam.raised && (lw.y > hipY - 0.1 || lw.y > 0.85) && (rw.y > hipY - 0.1 || rw.y > 0.85)) {
-                    detected = { type: 'delete_all', name: '전체 삭제', icon: '🧼', instruction: '🧼 그대로 3초 유지!' };
+                    detected = { type: 'delete_all', name: '전체 삭제', icon: '🧼', instruction: '🧼 그대로 2초 유지!' };
                 }
             }
 
             // 3. ⬆️ 앞으로 나란히
             if (!detected && lwV > VIS && rwV > VIS && Math.abs(lw.y - ls.y) < 0.15 && Math.abs(rw.y - rs.y) < 0.15 && lw.z < ls.z - 0.1 && rw.z < rs.z - 0.1) {
-                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙆 두 팔을 앞으로 나란히' };
+                detected = { type: 'move_forward', name: '앞으로 이동', icon: '⬆️', instruction: '🙆 두 팔을 앞으로 나란히 (3초)' };
             }
 
             // 4. 회전 동작들...
-            if (!detected && rwV > VIS && Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔 옆으로' };
-            if (!detected && lwV > VIS && Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔 옆으로' };
+            if (!detected && rwV > VIS && Math.abs(rw.y - rs.y) < 0.15 && rw.x < rs.x - 0.2) detected = { type: 'turn_right', name: '오른쪽 회전', icon: '↪️', instruction: '👉 오른팔 옆으로 (3초)' };
+            if (!detected && lwV > VIS && Math.abs(lw.y - ls.y) < 0.15 && lw.x > ls.x + 0.2) detected = { type: 'turn_left', name: '왼쪽 회전', icon: '↩️', instruction: '👈 왼팔 옆으로 (3초)' };
 
             if (detected) {
                 const confidence = getVis(lw, rw, nose);
