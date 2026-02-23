@@ -24,8 +24,8 @@
         }
 
         h1 {
-            font-size: 2.5vmin;
-            margin: 0.5vh 0 1vh 0;
+            font-size: 1.5rem;
+            margin: 5px 0 10px 0;
             text-shadow: 0 0 20px rgba(43, 226, 100, 0.8);
             flex-shrink: 0;
         }
@@ -52,33 +52,32 @@
             display: flex;
             flex-direction: row;
             width: 100%;
-            max-width: 98vw;
+            max-width: 1600px;
             flex: 1;
             min-height: 0;
-            gap: 2vw;
+            gap: 20px;
             justify-content: center;
             align-items: flex-start;
-            padding-bottom: 2vh;
+            padding-bottom: 10px;
         }
 
         #left-panel {
-            flex: 0 0 40vw;
-            max-width: 640px;
+            flex: 0 0 640px;
             display: flex;
             flex-direction: column;
             height: 100%;
             min-height: 0;
             position: relative;
-            margin-top: 4vh;
+            margin-top: 56px;
         }
 
         #right-panel {
             flex: 1;
-            min-width: 30vw;
+            min-width: 400px;
             max-width: 800px;
             display: flex;
             flex-direction: column;
-            gap: 1vh;
+            gap: 10px;
             height: 100%;
             min-height: 0;
             overflow: hidden;
@@ -87,14 +86,14 @@
 
         #video-container {
             position: relative;
-            width: 100%;
-            aspect-ratio: 4/3;
-            border: 0.4vw solid #2e7d32;
-            border-radius: 2vmin;
+            width: 640px;
+            height: 480px;
+            border: 4px solid #2e7d32;
+            border-radius: 20px;
             overflow: hidden;
             background: #000;
             flex-shrink: 0;
-            box-shadow: 0 0 3vw rgba(46, 125, 50, 0.6);
+            box-shadow: 0 0 30px rgba(46, 125, 50, 0.6);
             align-self: center;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
@@ -127,16 +126,16 @@
 
         #suggestion-box {
             position: absolute;
-            bottom: 2vh;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
             width: fit-content;
-            min-width: 20vw;
+            min-width: 280px;
             max-width: 80%;
             background: rgba(5, 25, 5, 0.9);
-            border-radius: 2vmin;
-            border: 0.2vw solid #81c784;
-            padding: 1vh 2vw 1vh 1.5vw;
+            border-radius: 18px;
+            border: 2px solid #81c784;
+            padding: 10px 25px 10px 16px;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -146,8 +145,8 @@
             transition: all 0.3s ease;
             z-index: 10;
             backdrop-filter: blur(8px);
-            box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.5);
-            gap: 1vw;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            gap: 12px;
         }
 
         #suggestion-box.active {
@@ -172,10 +171,10 @@
         }
 
         #gauge-track {
-            width: 1vmin;
-            height: 10vmin;
+            width: 12px;
+            height: 70px;
             background: rgba(255, 255, 255, 0.15);
-            border-radius: 0.5vmin;
+            border-radius: 6px;
             overflow: hidden;
             flex-shrink: 0;
             display: flex;
@@ -199,7 +198,7 @@
         }
 
         .suggestion-icon {
-            font-size: 6vmin;
+            font-size: 44px;
             margin-bottom: 2px;
         }
 
@@ -210,29 +209,13 @@
 
         #action-guide {
             background: rgba(20, 30, 20, 0.7);
-            border-radius: 2vmin;
+            border-radius: 15px;
             border: 1px solid #2e7d32;
-            padding: 1vh 1.5vw;
-            margin-top: 1vh;
+            padding: 8px 12px;
+            margin-top: 5px;
             display: flex;
             flex-direction: column;
-            gap: 0.5vh;
-            max-height: 28vh;
-            overflow-y: auto;
-        }
-
-        #action-guide::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        #action-guide::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-
-        #action-guide::-webkit-scrollbar-thumb {
-            background: #43a047;
-            border-radius: 10px;
+            gap: 4px;
         }
 
         .guide-title {
@@ -253,8 +236,8 @@
         .guide-item {
             display: flex;
             align-items: center;
-            gap: 1vw;
-            font-size: 1.8vmin;
+            gap: 8px;
+            font-size: 15px;
         }
 
         .guide-icon {
@@ -269,17 +252,16 @@
         }
 
         #stage-info {
-            height: 6vh;
+            height: 56px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 2vw;
-            font-size: 3vmin;
+            gap: 20px;
+            font-size: 24px;
             font-weight: bold;
             color: #c8e6c9;
             text-shadow: 0 0 10px #43a047;
             flex-shrink: 0;
-            position: relative;
         }
 
         .nav-btn {
@@ -320,11 +302,11 @@
         }
 
         .code-area-wrapper {
-            height: 18vh;
+            height: 140px;
             flex-shrink: 0;
             position: relative;
             width: 100%;
-            margin-top: 1vh;
+            margin-top: 10px;
         }
 
         #code-area {
@@ -356,18 +338,18 @@
         .code-block {
             background: #2e7d32;
             color: white;
-            padding: 1vh 1.5vw;
-            border-radius: 1vmin;
-            font-size: 4vmin;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8vw;
-            box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.3);
+            gap: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: default;
             transition: background 0.3s, opacity 0.3s;
-            min-width: 6vmin;
+            min-width: 50px;
         }
 
         .flip-v {
@@ -406,15 +388,14 @@
             background: #28a745;
             color: white;
             border: none;
-            padding: 0.8vh 1.2vw;
-            border-radius: 1vmin;
+            padding: 10px 25px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1.4vmin;
+            font-size: 15px;
             transition: all 0.2s;
-            box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.5);
-            position: absolute;
-            right: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            flex: 1;
         }
 
         #btn-download:hover {
@@ -429,18 +410,18 @@
         }
 
         #console-log {
-            height: 18vh;
+            height: 160px;
             width: 100%;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.8);
             color: #0f0;
             font-family: 'Consolas', monospace;
-            padding: 1vh;
-            border-radius: 1vmin;
+            padding: 8px;
+            border-radius: 10px;
             overflow-y: auto;
             border: 1px solid #333;
             box-sizing: border-box;
-            font-size: 1.2vmin;
+            font-size: 11px;
         }
 
         #modal-overlay {
@@ -481,15 +462,14 @@
 
         #tutorial-card {
             background: #1a2e1a;
-            border: 0.4vmin solid #43a047;
-            border-radius: 4vmin;
-            padding: 3vmin;
+            border: 3px solid #43a047;
+            border-radius: 25px;
+            padding: 30px;
             width: 90%;
-            max-width: 90vw;
-            max-height: 95vh;
-            overflow-y: auto;
+            max-width: 900px;
+            min-height: 500px;
             position: relative;
-            box-shadow: 0 0 5vw rgba(76, 175, 80, 0.4);
+            box-shadow: 0 0 50px rgba(76, 175, 80, 0.4);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -510,9 +490,9 @@
 
         /* Scene 1 */
         .character-box {
-            width: 20vmin;
-            height: 20vmin;
-            margin-bottom: 2vh;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
             animation: bounce 1.5s infinite ease-in-out;
         }
 
@@ -531,12 +511,12 @@
         .speech-bubble {
             background: white;
             color: #1a2e1a;
-            padding: 2vmin 3vmin;
-            border-radius: 3vmin;
+            padding: 20px;
+            border-radius: 20px;
             position: relative;
-            font-size: 3vmin;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 3vh;
+            margin-bottom: 40px;
             max-width: 80%;
             text-align: center;
         }
@@ -556,31 +536,28 @@
         .tut-layout {
             display: flex;
             width: 100%;
-            gap: 2vmin;
+            gap: 20px;
             align-items: center;
             justify-content: center;
-            margin-top: 2vh;
+            margin-top: 50px;
+            /* 기존 20px에서 하단으로 이동 (카운트다운 공간 확보) */
         }
 
         .tut-left {
             position: relative;
-            width: 45%;
-            aspect-ratio: 4/3;
-            border: 0.3vmin solid #2e7d32;
-            border-radius: 2vmin;
+            width: 400px;
+            height: 300px;
+            border: 3px solid #2e7d32;
+            border-radius: 15px;
             overflow: hidden;
         }
 
         .tut-right {
-            width: 45%;
-            aspect-ratio: 4/3;
+            width: 400px;
+            height: 300px;
             background: rgba(0, 0, 0, 0.3);
-            border: 0.2vmin solid #2e7d32;
-            border-radius: 2vmin;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: 2px solid #2e7d32;
+            border-radius: 15px;
         }
 
         #tut-video-canvas-2,
@@ -590,7 +567,6 @@
         #tut-video-canvas-6 {
             width: 100%;
             height: 100%;
-            display: block;
             transform: scaleX(-1);
             opacity: 0.8;
         }
@@ -600,33 +576,33 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 15vmin;
-            height: 15vmin;
+            width: 120px;
+            height: 120px;
             pointer-events: none;
         }
 
         .tut-instruction {
-            font-size: 2.5vmin;
+            font-size: 18px;
             color: #c8e6c9;
-            margin-top: 2vh;
+            margin-top: 20px;
             text-align: center;
             line-height: 1.5;
             font-weight: bold;
         }
 
         .tut-btn-container {
-            margin-top: 3vh;
+            margin-top: 30px;
             display: flex;
-            gap: 2vmin;
+            gap: 15px;
         }
 
         .tut-btn {
             background: #00acc1;
             color: white;
             border: none;
-            padding: 1.5vh 3vw;
-            border-radius: 1vmin;
-            font-size: 2.2vmin;
+            padding: 12px 35px;
+            border-radius: 10px;
+            font-size: 18px;
             cursor: pointer;
             transition: 0.2s;
         }
@@ -641,11 +617,9 @@
             background: #555;
         }
 
-        [id^="tut-maze-canvas-"],
-        [id^="tut-gauge-circle-"] {
+        #tut-maze-canvas {
             width: 100%;
             height: 100%;
-            display: block;
         }
     </style>
 </head>
@@ -702,13 +676,15 @@
                     <span class="guide-text" style="color:#ef9a9a;"><strong>모든 블록을 삭제하려면?</strong> : 만세 후 팔을 아래로</span>
                 </div>
             </div>
+            <div class="btn-row">
+                <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
+            </div>
         </div>
         <div id="right-panel">
             <div id="stage-info">
                 <button class="nav-btn" onclick="prevStage()">&#10094;</button>
                 <span id="stage-text">Stage 1 / 21</span>
                 <button class="nav-btn" onclick="nextStageDev()">&#10095;</button>
-                <button id="btn-download" onclick="downloadLogs()">로그 저장</button>
             </div>
             <div id="maze-outer"><canvas id="maze-canvas"></canvas></div>
             <div class="code-area-wrapper">
@@ -1440,12 +1416,7 @@
 
         function onResults(results) {
             if (!results.poseLandmarks) return;
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-            drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 });
-            drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
-            canvasCtx.restore();
+            canvasCtx.save(); canvasCtx.clearRect(0, 0, 640, 480); canvasCtx.drawImage(results.image, 0, 0, 640, 480); drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 }); drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 }); canvasCtx.restore();
 
             const lm = results.poseLandmarks;
             const now = Date.now();
@@ -1554,7 +1525,7 @@
             holdStartTime: null,
             targetAction: null,
             isSuccess: false,
-            charY: 0.633, // 캐릭터 Y 좌표 (Scene 2 이동용, 캔버스 높이 대비 비율)
+            charY: 190, // 캐릭터 Y 좌표 (Scene 2 이동용)
             charImg: 'back', // back or right
             blocks: [] // Scene 5, 6용 샘플 블록
         };
@@ -1594,7 +1565,7 @@
             }
             else tutorialState.targetAction = null;
 
-            tutorialState.charY = 0.633;
+            tutorialState.charY = 190;
             tutorialState.charImg = 'back';
 
             document.querySelectorAll('.tutorial-scene').forEach(s => s.classList.remove('active'));
@@ -1626,44 +1597,42 @@
             }
         }
 
-        function startCountdown(sceneNum, nextAction, successTitle = "좋아! 훌륭해!") {
-            let count = 3;
-            const instrId = `tut-instr-${sceneNum}`;
-            const updateMsg = () => {
-                const el = document.getElementById(instrId);
-                if (!el) return;
-                el.innerHTML = `
-                    <div style='color:#ffd700; font-size:24px; font-weight:bold; margin-bottom:10px;'>${successTitle}</div>
-                    <div style='color:#a5d6a7; font-size:18px;'>${count}초 뒤 자동으로 넘어갑니다...</div>
-                `;
-            };
-            updateMsg();
-            const timer = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    updateMsg();
-                } else {
-                    clearInterval(timer);
-                    nextAction();
-                }
-            }, 1000);
-        }
-
         function completeTutorialStep() {
             const n = tutorialState.currentScene;
             playSuccessSound(); // 성공 효과음 재생
 
+            const startCountdown = (sceneNum, nextAction, successTitle = "좋아! 훌륭해!") => {
+                let count = 3;
+                const instrId = `tut-instr-${sceneNum}`;
+                const updateMsg = () => {
+                    document.getElementById(instrId).innerHTML = `
+                        <div style='color:#ffd700; font-size:24px; font-weight:bold; margin-bottom:10px;'>${successTitle}</div>
+                        <div style='color:#a5d6a7; font-size:18px;'>${count}초 뒤 자동으로 넘어갑니다...</div>
+                    `;
+                };
+                updateMsg();
+                const timer = setInterval(() => {
+                    count--;
+                    if (count > 0) {
+                        updateMsg();
+                    } else {
+                        clearInterval(timer);
+                        nextAction();
+                    }
+                }, 1000);
+            };
+
             if (n === 2) {
-                // Scene 2: 캐릭터 앞으로 이동 애니메이션 (Y축 감소: 0.633 -> 0.166)
+                // Scene 2: 캐릭터 앞으로 이동 애니메이션 (Y축 감소: 190 -> 50)
                 let start = Date.now();
                 const animate = () => {
                     let progress = (Date.now() - start) / 1000;
                     if (progress < 1) {
-                        tutorialState.charY = 0.633 - (0.633 - 0.166) * progress;
+                        tutorialState.charY = 190 - 140 * progress;
                         drawTutMaze(2);
                         requestAnimationFrame(animate);
                     } else {
-                        tutorialState.charY = 0.166;
+                        tutorialState.charY = 50;
                         drawTutMaze(2);
                         startCountdown(2, () => goScene(3));
                     }
@@ -1672,19 +1641,23 @@
             } else if (n === 3) {
                 // Scene 3: 이미지 교체 (back -> right)
                 tutorialState.charImg = 'right';
+                drawTutMaze(3);
                 startCountdown(3, () => goScene(4));
             } else if (n === 4) {
                 // Scene 4: 이미지 교체 (back -> left)
                 tutorialState.charImg = 'left';
+                drawTutMaze(4);
                 startCountdown(4, () => goScene(5));
             } else if (n === 5) {
                 // Scene 5: 하나 삭제 (blocks.pop)
                 tutorialState.blocks.pop();
                 resetTutorialHold(); // 삭제 즉시 강조 효과 초기화
+                drawTutMaze(5);
                 startCountdown(5, () => goScene(6));
             } else if (n === 6) {
                 // Scene 6: 전체 삭제 (blocks = [])
                 tutorialState.blocks = [];
+                drawTutMaze(6);
                 startCountdown(6, () => finishTutorial(), "좋아! 이제 미로를 탈출하러 가보자!");
             }
         }
@@ -1692,68 +1665,50 @@
         function drawTutMaze(n) {
             const canvas = document.getElementById(`tut-maze-canvas-${n}`);
             if (!canvas) return;
-            const parent = canvas.parentElement;
-            const rect = parent.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) return;
-
-            // 크기가 변했을 때만 캔버스 해상도 조정 (성능 최적화)
-            if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-            }
-
             const ctxT = canvas.getContext('2d');
-            const cw = canvas.width, ch = canvas.height;
+            const cw = canvas.width = 400, ch = canvas.height = 300;
             ctxT.clearRect(0, 0, cw, ch);
 
-            // 가로 세로 중 작은 값을 기준으로 스케일 결정
-            const baseSize = Math.min(cw, ch);
-            const tileSize = baseSize * 0.35; // 조금 더 크게 조정
-            const tileX = (cw - tileSize) / 2;
-
-            // 타일 2개 그리기 (Scene 2: 수직 배치)
+            // 타일 2개 그리기 (Scene 2: 수직 배치, Scene 3: 중앙 배치)
             if (n === 2) {
-                // 타일 1 (출발 - 하단)
-                const y1 = ch * 0.65;
+                // 타일 1 (출발)
                 ctxT.fillStyle = '#7e57c2';
-                ctxT.beginPath(); ctxT.roundRect(tileX, y1, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
-                // 타일 2 (도착 - 상단)
-                const y2 = ch * 0.15;
+                ctxT.beginPath(); ctxT.roundRect(160, 190, 80, 80, 15); ctxT.fill();
+                // 타일 2 (도착)
                 ctxT.fillStyle = '#ec407a';
-                ctxT.beginPath(); ctxT.roundRect(tileX, y2, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
+                ctxT.beginPath(); ctxT.roundRect(160, 50, 80, 80, 15); ctxT.fill();
 
-                // 캐릭터
+                // 캐릭터 (이미지 비율 유지하며 타일 크기에 맞춰 축소 및 하단을 타일 중앙에 정렬)
                 const img = tutoImages[tutorialState.charImg];
                 if (img && img.complete) {
                     const nw = img.naturalWidth || 60;
                     const nh = img.naturalHeight || 60;
                     const ratio = nw / nh;
-                    const drawW = tileSize * 0.85;
+                    const drawW = 60;
                     const drawH = drawW / ratio;
-                    // 타일 중앙에서의 Y 위치 (하단 정렬)
-                    const currentY = ch * tutorialState.charY;
-                    ctxT.drawImage(img, (tileX + tileSize / 2) - drawW / 2, (currentY + tileSize / 2) - drawH + (tileSize * 0.1), drawW, drawH);
+                    // 타일 중앙 Y: currentY + 40
+                    ctxT.drawImage(img, 200 - drawW / 2, (tutorialState.charY + 40) - drawH, drawW, drawH);
                 }
             } else if (n === 3 || n === 4) {
-                // 타일 1개 (회전 학습용 - 중앙)
-                const y1 = (ch - tileSize) / 2;
+                // 타일 1개 (회전 학습용, 위치를 살짝 아래로 조정)
                 ctxT.fillStyle = '#7e57c2';
-                ctxT.beginPath(); ctxT.roundRect(tileX, y1, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
+                ctxT.beginPath(); ctxT.roundRect(160, 130, 80, 80, 15); ctxT.fill();
 
-                // 캐릭터
+                // 캐릭터 (이미지 비율 유지하며 하단을 타일 중앙에 정렬)
                 const img = tutoImages[tutorialState.charImg];
                 if (img && img.complete) {
                     const nw = img.naturalWidth || 60;
                     const nh = img.naturalHeight || 60;
                     const ratio = nw / nh;
-                    const drawW = tileSize * 0.95;
+                    const drawW = 75;
                     const drawH = drawW / ratio;
-                    ctxT.drawImage(img, (tileX + tileSize / 2) - drawW / 2, (y1 + tileSize * 0.5) - drawH + (tileSize * 0.1), drawW, drawH);
+                    // 타일 중앙 Y: 130 + 40 = 170
+                    ctxT.drawImage(img, 200 - drawW / 2, 170 - drawH, drawW, drawH);
                 }
             } else if (n === 5 || n === 6) {
                 // 블록 표시 (중앙 정렬)
                 const blocks = tutorialState.blocks;
-                const blockW = baseSize * 0.22, blockH = blockW, gap = baseSize * 0.05;
+                const blockW = 60, blockH = 60, gap = 15;
                 const totalW = blocks.length * blockW + (blocks.length - 1) * gap;
                 let startX = (cw - totalW) / 2;
 
@@ -1761,18 +1716,20 @@
                     const bx = startX + i * (blockW + gap);
                     const by = (ch - blockH) / 2;
 
+                    // 블록 배경 (삭제 동작 시 빨간색 강조 - 튜토리얼 통합 센싱 반영)
                     let isWarning = false;
                     if (tutorialState.holdStartTime) {
-                        if (n === 5 && i === blocks.length - 1) isWarning = true;
-                        if (n === 6) isWarning = true;
+                        if (n === 5 && i === blocks.length - 1) isWarning = true; // Scene 5: 마지막 블록
+                        if (n === 6) isWarning = true; // Scene 6: 전체 블록
                     }
 
                     ctxT.fillStyle = isWarning ? '#ef5350' : '#4527a0';
-                    ctxT.beginPath(); ctxT.roundRect(bx, by, blockW, blockH, blockW * 0.15); ctxT.fill();
-                    ctxT.strokeStyle = isWarning ? '#ffcdd2' : '#b39ddb'; ctxT.lineWidth = Math.max(1, baseSize * 0.01); ctxT.stroke();
+                    ctxT.beginPath(); ctxT.roundRect(bx, by, blockW, blockH, 10); ctxT.fill();
+                    ctxT.strokeStyle = isWarning ? '#ffcdd2' : '#b39ddb'; ctxT.lineWidth = 2; ctxT.stroke();
 
+                    // 아이콘
                     ctxT.fillStyle = 'white';
-                    ctxT.font = `bold ${blockW * 0.55}px Arial`;
+                    ctxT.font = '30px Arial';
                     ctxT.textAlign = 'center';
                     ctxT.textBaseline = 'middle';
                     ctxT.fillText(icon, bx + blockW / 2, by + blockH / 2);
@@ -1783,66 +1740,22 @@
         function drawTutProgress(ratio, n) {
             const canvas = document.getElementById(`tut-gauge-circle-${n}`);
             if (!canvas) return;
-            const parent = canvas.parentElement;
-            const rect = parent.getBoundingClientRect();
-            if (rect.width === 0) return;
-
-            if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-            }
-
             const ctxP = canvas.getContext('2d');
-            const cw = rect.width;
-            const center = cw / 2;
-            const radius = cw * 0.4;
-            const lineWidth = cw * 0.12;
-            ctxP.clearRect(0, 0, cw, cw);
-
-            // 배경 트랙
-            ctxP.beginPath();
-            ctxP.arc(center, center, radius, 0, Math.PI * 2);
-            ctxP.strokeStyle = "rgba(255,255,255,0.15)";
-            ctxP.lineWidth = lineWidth;
-            ctxP.stroke();
-
-            // 채워지는 게이지
-            ctxP.beginPath();
-            ctxP.arc(center, center, radius, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2);
-            ctxP.strokeStyle = "#00ff00";
-            ctxP.lineWidth = lineWidth;
-            ctxP.lineCap = 'round';
-            ctxP.stroke();
+            ctxP.clearRect(0, 0, 120, 120);
+            ctxP.beginPath(); ctxP.arc(60, 60, 50, 0, Math.PI * 2); ctxP.strokeStyle = "rgba(255,255,255,0.2)"; ctxP.lineWidth = 10; ctxP.stroke();
+            ctxP.beginPath(); ctxP.arc(60, 60, 50, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2); ctxP.strokeStyle = "#00ff00"; ctxP.lineWidth = 10; ctxP.stroke();
         }
 
-        // 메인 비디오를 튜토리얼 캔버스에 복사 및 모든 요소 실시간 리사이징 드로잉
+        // 메인 비디오를 튜토리얼 캔버스에 복사
         function syncTutVideo() {
             if (!tutorialState.isActive) return requestAnimationFrame(syncTutVideo);
             const n = tutorialState.currentScene;
             if (n >= 2) {
-                // 1. 비디오 동기화
                 const targetCanvas = document.getElementById(`tut-video-canvas-${n}`);
                 if (targetCanvas) {
-                    const parent = targetCanvas.parentElement;
-                    const rect = parent.getBoundingClientRect();
-                    if (rect.width > 0 && rect.height > 0) {
-                        if (targetCanvas.width !== Math.floor(rect.width) || targetCanvas.height !== Math.floor(rect.height)) {
-                            targetCanvas.width = rect.width;
-                            targetCanvas.height = rect.height;
-                        }
-                        const tctx = targetCanvas.getContext('2d');
-                        tctx.drawImage(canvasElement, 0, 0, rect.width, rect.height);
-                    }
-                }
-                // 2. 미로 요소 실시간 리사이징 드로잉
-                drawTutMaze(n);
-                // 3. 게이지 실시간 리사이징 드로잉 (진행 중일 때만)
-                if (tutorialState.holdStartTime) {
-                    const elapsed = Date.now() - tutorialState.holdStartTime;
-                    const duration = getHoldDuration(tutorialState.targetAction); // FIXED: currentMotion -> targetAction
-                    drawTutProgress(Math.min(1, elapsed / duration), n);
-                } else {
-                    drawTutProgress(0, n);
+                    const tctx = targetCanvas.getContext('2d');
+                    targetCanvas.width = 400; targetCanvas.height = 300;
+                    tctx.drawImage(canvasElement, 0, 0, 400, 300);
                 }
             }
             requestAnimationFrame(syncTutVideo);
