@@ -48,10 +48,11 @@
             flex: 0 0 640px;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: auto;
             min-height: 0;
             position: relative;
             margin-top: 56px;
+            gap: 10px;
         }
 
         #right-panel {
@@ -178,10 +179,13 @@
             border-radius: 15px;
             border: 1px solid #5e35b1;
             padding: 15px;
-            margin-top: 15px;
+            margin-top: 0;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            max-height: 160px;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
 
         .guide-item {
