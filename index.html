@@ -81,6 +81,7 @@
             height: 100%;
             min-height: 0;
             overflow: hidden;
+            margin-top: 0;
         }
 
         #video-container {
@@ -210,18 +211,18 @@
             background: rgba(20, 30, 20, 0.7);
             border-radius: 15px;
             border: 1px solid #2e7d32;
-            padding: 15px;
-            margin-top: 15px;
+            padding: 8px 12px;
+            margin-top: 5px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 4px;
         }
 
         .guide-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #81c784;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             padding-left: 5px;
             border-left: 3px solid #43a047;
         }
@@ -235,8 +236,8 @@
         .guide-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 16px;
+            gap: 8px;
+            font-size: 15px;
         }
 
         .guide-icon {
@@ -247,6 +248,7 @@
 
         .guide-text {
             color: #c8e6c9;
+            line-height: 1.25;
         }
 
         #stage-info {
@@ -447,11 +449,7 @@
 </head>
 
 <body>
-    <h1>
-        모션 코딩: 미로 탈출
-        <span class="version-badge">⚡ 즉시 실행</span>
-        <span class="version-badge red">📏 5x4 그리드</span>
-    </h1>
+    <h1>몸을 움직여서 미로를 탈출해요</h1>
 
     <div id="main-layout">
         <div id="left-panel">
@@ -491,7 +489,7 @@
                 </div>
 
                 <div class="guide-title delete"
-                    style="border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;margin-top:5px;">삭제 블록 (2초 유지)
+                    style="border-top:1px solid rgba(255,255,255,0.1);padding-top:4px;margin-top:2px;">삭제 블록 (2초 유지)
                 </div>
                 <div class="guide-item">
                     <span class="guide-icon">❌</span>
