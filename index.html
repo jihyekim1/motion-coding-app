@@ -13,8 +13,8 @@
             margin: 0;
             padding: 5px 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at center, #1a2e1a 0%, #0b1a0b 100%);
-            color: white;
+            background: radial-gradient(circle at center, #1a364a 0%, #0a1f2b 100%);
+            color: #f6f4e1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,20 +26,21 @@
         h1 {
             font-size: 2.5vmin;
             margin: 0.5vh 0 1vh 0;
-            text-shadow: 0 0 20px rgba(43, 226, 100, 0.8);
+            color: #dca54a;
+            text-shadow: 0 0 20px rgba(220, 165, 74, 0.8);
             flex-shrink: 0;
         }
 
         .version-badge {
             display: inline-block;
-            background: #2e7d32;
-            color: #a5d6a7;
+            background: #dca54a;
+            color: #12364a;
             font-size: 0.75rem;
             padding: 2px 10px;
             border-radius: 20px;
             margin-left: 6px;
             vertical-align: middle;
-            border: 1px solid #43a047;
+            border: 1px solid #c9943f;
         }
 
         .version-badge.red {
@@ -89,12 +90,12 @@
             position: relative;
             width: 100%;
             aspect-ratio: 4/3;
-            border: 0.4vw solid #2e7d32;
+            border: 0.4vw solid #2c5991;
             border-radius: 2vmin;
             overflow: hidden;
             background: #000;
             flex-shrink: 0;
-            box-shadow: 0 0 3vw rgba(46, 125, 50, 0.6);
+            box-shadow: 0 0 3vw rgba(44, 89, 145, 0.6);
             align-self: center;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
@@ -133,9 +134,9 @@
             width: fit-content;
             min-width: 15vw;
             max-width: 85%;
-            background: rgba(5, 25, 5, 0.9);
+            background: rgba(18, 54, 74, 0.9);
             border-radius: 1.5vmin;
-            border: 0.15vw solid #81c784;
+            border: 0.15vw solid #2c5991;
             padding: 0.8vh 1.5vw;
             display: flex;
             flex-direction: row;
@@ -151,9 +152,9 @@
         }
 
         #suggestion-box.active {
-            background: rgba(27, 94, 32, 0.95);
-            box-shadow: 0 0 25px rgba(76, 175, 80, 0.8);
-            border-color: #fff;
+            background: rgba(44, 89, 145, 0.95);
+            box-shadow: 0 0 25px rgba(44, 89, 145, 0.8);
+            border-color: #f6f4e1;
             transform: translateX(-50%) scale(1.02);
         }
 
@@ -199,7 +200,7 @@
 
         #suggestion-placeholder {
             font-size: 2vmin;
-            color: #c8e6c9;
+            color: #f6f4e1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -208,9 +209,9 @@
         }
 
         #action-guide {
-            background: rgba(20, 30, 20, 0.7);
+            background: rgba(18, 54, 74, 0.7);
             border-radius: 2vmin;
-            border: 1px solid #2e7d32;
+            border: 1px solid #2c5991;
             padding: 1vh 1.5vw;
             margin-top: 1vh;
             display: flex;
@@ -230,17 +231,17 @@
         }
 
         #action-guide::-webkit-scrollbar-thumb {
-            background: #43a047;
+            background: #2c5991;
             border-radius: 10px;
         }
 
         .guide-title {
             font-size: 13px;
-            color: #81c784;
+            color: #dca54a;
             font-weight: bold;
             margin-bottom: 2px;
             padding-left: 5px;
-            border-left: 3px solid #43a047;
+            border-left: 3px solid #dca54a;
         }
 
         .guide-title.delete {
@@ -263,7 +264,7 @@
         }
 
         .guide-text {
-            color: #c8e6c9;
+            color: #f6f4e1;
             line-height: 1.25;
         }
 
@@ -275,16 +276,16 @@
             gap: 2vw;
             font-size: 3vmin;
             font-weight: bold;
-            color: #c8e6c9;
-            text-shadow: 0 0 10px #43a047;
+            color: #f6f4e1;
+            text-shadow: 0 0 10px #dca54a;
             flex-shrink: 0;
             position: relative;
         }
 
         .nav-btn {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #43a047;
-            color: #c8e6c9;
+            border: 1px solid #2c5991;
+            color: #f6f4e1;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -297,7 +298,7 @@
         }
 
         .nav-btn:hover {
-            background: rgba(67, 160, 71, 0.5);
+            background: rgba(44, 89, 145, 0.5);
             transform: scale(1.1);
         }
 
@@ -305,10 +306,10 @@
             flex: 1;
             min-height: 0;
             position: relative;
-            background: rgba(20, 30, 20, 0.7);
+            background: rgba(18, 54, 74, 0.7);
             border-radius: 20px;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 175, 80, 0.2);
-            border: 2px solid #2e7d32;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(44, 89, 145, 0.2);
+            border: 2px solid #2c5991;
             overflow: hidden;
         }
 
@@ -330,7 +331,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #1b5e20;
+            border: 2px solid #2c5991;
             border-radius: 15px;
             padding: 10px;
             display: flex;
@@ -353,8 +354,8 @@
         }
 
         .code-block {
-            background: #2e7d32;
-            color: white;
+            background: #2c5991;
+            color: #f6f4e1;
             padding: 1vh 1.5vw;
             border-radius: 1vmin;
             font-size: 4vmin;
@@ -375,8 +376,9 @@
         }
 
         .code-block.latest {
-            background: #43a047;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+            background: #dca54a;
+            color: #12364a;
+            box-shadow: 0 0 10px rgba(220, 165, 74, 0.7);
         }
 
         .code-block.to-delete {
@@ -402,8 +404,8 @@
         }
 
         #btn-download {
-            background: #28a745;
-            color: white;
+            background: #2c5991;
+            color: #f6f4e1;
             border: none;
             padding: 0.8vh 1.2vw;
             border-radius: 1vmin;
@@ -417,7 +419,7 @@
         }
 
         #btn-download:hover {
-            background: #218838;
+            background: #1a364a;
             transform: scale(1.05);
         }
 
@@ -432,7 +434,7 @@
             width: 100%;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.8);
-            color: #0f0;
+            color: #f6f4e1;
             font-family: 'Consolas', monospace;
             padding: 1vh;
             border-radius: 1vmin;
@@ -456,12 +458,12 @@
         }
 
         #modal-content {
-            background: #1a2e1a;
+            background: #12364a;
             padding: 30px;
             border-radius: 20px;
             text-align: center;
-            border: 4px solid #43a047;
-            box-shadow: 0 0 50px rgba(76, 175, 80, 0.5);
+            border: 4px solid #dca54a;
+            box-shadow: 0 0 50px rgba(220, 165, 74, 0.5);
         }
 
         /* ── 튜토리얼 ── */
@@ -479,8 +481,8 @@
         }
 
         #tutorial-card {
-            background: #1a2e1a;
-            border: 0.4vmin solid #43a047;
+            background: #12364a;
+            border: 0.4vmin solid #2c5991;
             border-radius: 4vmin;
             padding: 3vmin;
             width: 90%;
@@ -488,7 +490,7 @@
             max-height: 95vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 0 5vw rgba(76, 175, 80, 0.4);
+            box-shadow: 0 0 5vw rgba(44, 89, 145, 0.4);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -528,8 +530,8 @@
         }
 
         .speech-bubble {
-            background: white;
-            color: #1a2e1a;
+            background: #f6f4e1;
+            color: #12364a;
             padding: 2vmin 3vmin;
             border-radius: 3vmin;
             position: relative;
@@ -546,7 +548,7 @@
             bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
-            border-top: 10px solid white;
+            border-top: 10px solid #f6f4e1;
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
         }
@@ -565,7 +567,7 @@
             position: relative;
             width: 45%;
             aspect-ratio: 4/3;
-            border: 0.3vmin solid #2e7d32;
+            border: 0.3vmin solid #2c5991;
             border-radius: 2vmin;
             overflow: hidden;
         }
@@ -574,7 +576,7 @@
             width: 45%;
             aspect-ratio: 4/3;
             background: rgba(0, 0, 0, 0.3);
-            border: 0.2vmin solid #2e7d32;
+            border: 0.2vmin solid #2c5991;
             border-radius: 2vmin;
             overflow: hidden;
             display: flex;
@@ -606,7 +608,7 @@
 
         .tut-instruction {
             font-size: 2.5vmin;
-            color: #c8e6c9;
+            color: #f6f4e1;
             margin-top: 2vh;
             text-align: center;
             line-height: 1.5;
@@ -620,10 +622,11 @@
         }
 
         .tut-btn {
-            background: #00acc1;
-            color: white;
+            background: #dca54a;
+            color: #12364a;
             border: none;
             padding: 1.5vh 3vw;
+            font-weight: bold;
             border-radius: 1vmin;
             font-size: 2.2vmin;
             cursor: pointer;
@@ -919,7 +922,7 @@
             ctxG.stroke();
 
             // 진행 바
-            let color = "#00ff00"; // 기본 이동
+            let color = "#dca54a"; // 기본 이동 (골드)
             if (mode === 'delete-one') color = "#ef5350";
             else if (mode === 'delete-all') color = "#e91e63";
 
@@ -1393,9 +1396,9 @@
                     if (cell === 1 || cell === 2) {
                         ctx.beginPath();
                         ctx.roundRect(px + TILE_SIZE * 0.1, py + TILE_SIZE * 0.1, TILE_SIZE * 0.8, TILE_SIZE * 0.8, TILE_SIZE * 0.2);
-                        ctx.fillStyle = (cell === 2) ? '#ec407a' : '#7e57c2';
+                        ctx.fillStyle = (cell === 2) ? '#dca54a' : '#2c5991';
                         ctx.fill();
-                        if (cell === 1) { ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill(); }
+                        if (cell === 1) { ctx.fillStyle = "rgba(246,244,225,0.3)"; ctx.beginPath(); ctx.arc(px + TILE_SIZE * 0.4, py + TILE_SIZE * 0.4, TILE_SIZE * 0.08, 0, Math.PI * 2); ctx.fill(); }
                     }
                 }
             }
@@ -1647,8 +1650,8 @@
                 const el = document.getElementById(instrId);
                 if (!el) return;
                 el.innerHTML = `
-                    <div style='color:#ffd700; font-size:24px; font-weight:bold; margin-bottom:10px;'>${successTitle}</div>
-                    <div style='color:#a5d6a7; font-size:18px;'>${count}초 뒤 자동으로 넘어갑니다...</div>
+                    <div style='color:#dca54a; font-size:24px; font-weight:bold; margin-bottom:10px;'>${successTitle}</div>
+                    <div style='color:#f6f4e1; font-size:18px;'>${count}초 뒤 자동으로 넘어갑니다...</div>
                 `;
             };
             updateMsg();
@@ -1729,11 +1732,11 @@
             if (n === 2) {
                 // 타일 1 (출발 - 하단)
                 const y1 = ch * 0.65;
-                ctxT.fillStyle = '#7e57c2';
+                ctxT.fillStyle = '#2c5991';
                 ctxT.beginPath(); ctxT.roundRect(tileX, y1, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
                 // 타일 2 (도착 - 상단)
                 const y2 = ch * 0.15;
-                ctxT.fillStyle = '#ec407a';
+                ctxT.fillStyle = '#dca54a';
                 ctxT.beginPath(); ctxT.roundRect(tileX, y2, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
 
                 // 캐릭터
@@ -1751,7 +1754,7 @@
             } else if (n === 3 || n === 4) {
                 // 타일 1개 (회전 학습용 - 중앙)
                 const y1 = (ch - tileSize) / 2;
-                ctxT.fillStyle = '#7e57c2';
+                ctxT.fillStyle = '#2c5991';
                 ctxT.beginPath(); ctxT.roundRect(tileX, y1, tileSize, tileSize, tileSize * 0.15); ctxT.fill();
 
                 // 캐릭터
@@ -1781,9 +1784,9 @@
                         if (n === 6) isWarning = true;
                     }
 
-                    ctxT.fillStyle = isWarning ? '#ef5350' : '#4527a0';
+                    ctxT.fillStyle = isWarning ? '#ef5350' : '#2c5991';
                     ctxT.beginPath(); ctxT.roundRect(bx, by, blockW, blockH, blockW * 0.15); ctxT.fill();
-                    ctxT.strokeStyle = isWarning ? '#ffcdd2' : '#b39ddb'; ctxT.lineWidth = Math.max(1, baseSize * 0.01); ctxT.stroke();
+                    ctxT.strokeStyle = isWarning ? '#ef5350' : '#dca54a'; ctxT.lineWidth = Math.max(1, baseSize * 0.01); ctxT.stroke();
 
                     ctxT.fillStyle = 'white';
                     ctxT.font = `bold ${blockW * 0.55}px Arial`;
@@ -1823,7 +1826,7 @@
             // 채워지는 게이지
             ctxP.beginPath();
             ctxP.arc(center, center, radius, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2);
-            ctxP.strokeStyle = "#00ff00";
+            ctxP.strokeStyle = "#dca54a"; // 골드
             ctxP.lineWidth = lineWidth;
             ctxP.lineCap = 'round';
             ctxP.stroke();
